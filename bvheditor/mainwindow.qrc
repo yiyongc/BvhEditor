@@ -1,0 +1,14 @@
+<RCC>
+    <qresource>
+      <file>images/ground.png</file>
+      <file>images/play.png</file>
+      <file>images/playselect.png</file>
+      <file>images/repeat.png</file>
+      <file>images/restart.png</file>
+      <file>images/return.png</file>
+      <file>images/stop.png</file>
+      <file>images/Tpose.png</file>
+      <file>images/zoomin.png</file>
+      <file>images/zoomout.png</file>
+    </qresource>
+</RCC>

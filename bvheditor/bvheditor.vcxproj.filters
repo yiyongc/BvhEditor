@@ -1,0 +1,799 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{260c1684-4a5e-4873-8f9d-762e59e1036e}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{1980a98d-ffc1-41e8-acb3-688980738144}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="controllers">
+      <UniqueIdentifier>{61e42da9-68a0-4e9b-b747-25bb41fa5736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{b54b28e8-3e0b-4fb9-bcb0-c0864cec862b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{b4b84dc4-f0de-48db-91a5-287a584f4315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="QsLog2">
+      <UniqueIdentifier>{9cbc286e-eabf-402b-9f08-97227aa38205}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenToonz">
+      <UniqueIdentifier>{f76fea44-573f-4524-8877-25e4a5d10e56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenToonz\common">
+      <UniqueIdentifier>{5192d380-dc8d-40c0-af2a-2b8516d8e6d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenToonz\tcg">
+      <UniqueIdentifier>{934913f7-93f8-479a-9db4-fd15f554e33a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenToonz\common\trop">
+      <UniqueIdentifier>{04ee1e51-0313-4406-a5ad-e7b48740b71f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenToonz\tcg\hpp">
+      <UniqueIdentifier>{037ca0a3-9954-4ee3-98b0-38a40268c8b5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_mainwindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_mainwindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_mainwindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="data\Layer.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\LayerGroup.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\LayerId.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\Sheet.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\SheetId.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="controllers\CACStateMachine.cpp">
+      <Filter>controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="controllers\LayerController.cpp">
+      <Filter>controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="controllers\LayerSelector.cpp">
+      <Filter>controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="controllers\ViewSettings.cpp">
+      <Filter>controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FCContainer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FCContainer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FrameWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FrameWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_LayerCreatorWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_LayerCreatorWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Timeline.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Timeline.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QsLogDestFunctor.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QsLogDestFunctor.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\FCContainer.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\FrameWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\LayerCreatorWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\Timeline.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SheetCanvas.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SheetCanvas.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_JointTreeListModel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_JointTreeListModel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="data\JointTreeListItem.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\JointTreeListModel.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\JointTreeWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="QsLog2\QsLog.cpp">
+      <Filter>QsLog2</Filter>
+    </ClCompile>
+    <ClCompile Include="QsLog2\QsLogDest.cpp">
+      <Filter>QsLog2</Filter>
+    </ClCompile>
+    <ClCompile Include="QsLog2\QsLogDestConsole.cpp">
+      <Filter>QsLog2</Filter>
+    </ClCompile>
+    <ClCompile Include="QsLog2\QsLogDestFile.cpp">
+      <Filter>QsLog2</Filter>
+    </ClCompile>
+    <ClCompile Include="QsLog2\QsLogDestFunctor.cpp">
+      <Filter>QsLog2</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\ImportDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ImportDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ImportDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\ExportDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ExportDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ExportDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\StartupDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_StartupDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_StartupDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\StartupFPSDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_StartupFPSDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_StartupFPSDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\NewFileFPSDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NewFileFPSDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NewFileFPSDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_LayerController.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_LayerController.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\JointEditorWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_JointEditorWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_JointEditorWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="data\EulerAngles.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\Arm.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\Segment.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="data\Matrices.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\SheetCanvas.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\SelectPlayDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SelectPlayDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SelectPlayDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\ViewCtrlDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ViewCtrlDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ViewCtrlDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\InsertFrameDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_InsertFrameDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_InsertFrameDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\DeleteSelectedDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DeleteSelectedDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DeleteSelectedDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\common\trop\runsmap.cpp">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\trop_borders.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tsmartpointer.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tstring.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\gutil.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\meshbuilder.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\meshutils.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tbigmemorymanager.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tblur.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\texception.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tgeometry.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\timage.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tmeshimage.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\toperators.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tpixel.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\tpixelutils.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\traster.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenToonz\MeshOptionDialog.cpp">
+      <Filter>OpenToonz</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MeshOptionDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MeshOptionDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="data\ImageFile.cpp">
+      <Filter>data</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\ImageListWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="mainwindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mainwindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mainwindow.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\FCContainer.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\FrameWidget.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\LayerCreatorWidget.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\Timeline.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\JointTreeListModel.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\SheetCanvas.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLogDestFunctor.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\ImportDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\ExportDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\StartupDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\StartupFPSDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\NewFileFPSDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\LayerController.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\JointEditorWidget.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\ui_mainwindow.h">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\AbstractCACStateMachine.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\AbstractLayerController.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\AbstractLayerSelector.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\AbstractViewSettings.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\CACStateMachine.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\LayerSelector.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="controllers\ViewSettings.h">
+      <Filter>controllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\AbstractLayer.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\AbstractLayerGroup.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\AbstractLayerType.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\AbstractSheet.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\Arm.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\EulerAngles.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\FrameId.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\include.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\Layer.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\LayerGroup.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\LayerId.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\Matrices.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\QuatTypes.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\Segment.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\Sheet.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\SheetId.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\utf8string.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="data\JointTreeListItem.h">
+      <Filter>data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\JointTreeWidget.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\FrameCreatorDefs.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLog.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLogDest.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLogDestConsole.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLogDestFile.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLogDisableForThisFile.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QsLog2\QsLogLevel.h">
+      <Filter>QsLog2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\SelectPlayDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\ViewCtrlDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\InsertFrameDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\DeleteSelectedDialog.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="OpenToonz\MeshOptionDialog.h">
+      <Filter>OpenToonz</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OpenToonz\common\trop\raster_edge_evaluator.h">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\raster_edge_evaluator.hpp">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\raster_edge_iterator.h">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\raster_edge_iterator.hpp">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\runsmap.h">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\borders_extractor.h">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\borders_extractor.hpp">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\common\trop\pixelselectors.h">
+      <Filter>OpenToonz\common\trop</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\hpp\polyline_ops.hpp">
+      <Filter>OpenToonz\tcg\hpp</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\hpp\sequence_ops.hpp">
+      <Filter>OpenToonz\tcg\hpp</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\hpp\triangulate.hpp">
+      <Filter>OpenToonz\tcg\hpp</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\hpp\mesh.hpp">
+      <Filter>OpenToonz\tcg\hpp</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\hash.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\iterator_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\list.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\macros.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\mesh.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\mesh_bgl.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\numeric_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\observer_notifier.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\point.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\point_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\poly_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\polyline_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\ptr.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\sequence_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\sfinae.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_containers_reader.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_cyclic.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_edge.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_face.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_hash.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_iterator_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_list.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_mesh.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_mesh_bgl.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_misc.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_observer_notifier.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_point.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_polylineops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_sequence_ops.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_traits.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_triangulate.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\tcg_vertex.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\traits.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\triangulate.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\vertex.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\alignment.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\base.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\consts.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\containers_reader.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\cyclic.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\edge.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg\face.h">
+      <Filter>OpenToonz\tcg</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\traster.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\trastercm.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\trasterimage.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\trop.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\trop_borders.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tsmartpointer.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\ttexturesstorage.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tthreadmessage.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tutil.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\gutil.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\meshbuilder.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\meshtexturizer.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\meshutils.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\plasticdeformer.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\plasticdeformerstorage.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\plastichandle.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tatomicvar.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tbigmemorymanager.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcg_wrap.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tcommon.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tconvert.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\texception.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tgeometry.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tgl.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\timage.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tmachine.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tmeshimage.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tnztypes.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tpixel.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tpixelcm.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tpixelgr.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenToonz\tpixelutils.h">
+      <Filter>OpenToonz</Filter>
+    </ClInclude>
+    <ClInclude Include="data\ImageFile.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\ImageListWidget.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
