@@ -47,7 +47,8 @@ namespace cacani {
 			m_IKArm = new Arm();
 			m_timer = new QTimer(this);
 			m_timer_selected = new QTimer(this);
-			
+			updateState(STATE_CAMERA);
+
 			connect(m_timer_selected, SIGNAL(timeout()), this, SLOT(playCanvasSelected()));
 			connect(m_timer, SIGNAL(timeout()), this, SLOT(playCanvas()));
 		}
@@ -461,8 +462,42 @@ namespace cacani {
 			float  light0_position[] = { 10.0, 10.0, 10.0, 1.0 };
 			glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
 
+			drawMessage(0, modeMessage);
 
-			//Draw the stage
+			if (canvasState != STATE_BUILDER) {
+				drawStage();
+
+				//Draw BVH Skeleton
+				RenderFigure(figure_scale);
+
+				//Draw the Mesh first before Images so that it overlays
+				//Resize generally
+				glScaled(1.0 / 100, 1.0 / 100, 1);
+				if (viewMesh) {
+					for (int i = 0; i < m_imageGroup->size(); i++) {
+						if (m_imageGroup->m_images[i].getMeshImage().getPointer() != NULL)
+							renderMesh(m_imageGroup->m_images[i]);
+					}
+				}
+				if (viewImages) {
+					for (int i = 0; i < m_imageGroup->size(); i++) {
+						if (m_imageGroup->m_images[i].m_imgTexture == 0)
+							createTextureForGL(m_imageGroup->m_images[i]);
+						else
+							renderImage(m_imageGroup->m_images[i]);
+					}
+				}
+				glScaled(100, 100, 1);				
+
+				//glutSwapBuffers();
+				if (m_IKEnabled){
+					RenderIKBone();
+				}
+
+			}
+		}
+
+		void SheetCanvas::drawStage() {
 			float  size = 3.0f;
 			int  num_x = 5, num_z = 5;
 			double  ox, oz;
@@ -487,44 +522,9 @@ namespace cacani {
 			}
 			glFinish();
 			glEnd();
-
-			//Draw BVH Skeleton
-			RenderFigure(figure_scale);
-
-			//Draw the Mesh first before Images so that it overlays
-			//Resize generally
-			glScaled(1.0 / 100, 1.0 / 100, 1);
-			if (viewMesh) {
-				for (int i = 0; i < m_imageGroup->size(); i++) {
-					if (m_imageGroup->m_images[i].getMeshImage().getPointer() != NULL)
-						renderMesh(m_imageGroup->m_images[i]);
-				}
-			}
-			if (viewImages) {
-				for (int i = 0; i < m_imageGroup->size(); i++) {
-					if (m_imageGroup->m_images[i].m_imgTexture == 0)
-						createTextureForGL(m_imageGroup->m_images[i]);
-					else 						
-						renderImage(m_imageGroup->m_images[i]);
-				}
-			}
-			glScaled(100, 100, 1);
-
-			//DrawMessage
-			//This messaging functinality is functioning well, but not needed at the moment
-			char  message[message_length * max_bvh_file_number];
-			sprintf(message, "BVH Editor Messages");
-			drawMessage(0, message);
-
-			//glutSwapBuffers();
-			if (m_IKEnabled){
-				RenderIKBone();
-			}
-
-			
 		}
 
-		void  SheetCanvas::drawMessage(int line_no, const char * message)
+		void SheetCanvas::drawMessage(int line_no, const char * message)
 		{
 			int   i;
 			if (message == NULL)
@@ -577,7 +577,7 @@ namespace cacani {
 			lastPos = event->pos();
 			this->setFocus();
 
-			if (event->buttons() & Qt::MidButton) {
+			if (event->buttons() & Qt::MidButton && canvasState != STATE_BUILDER) {
 				if (playStatus == false) {
 					playStatus = true;
 				}
@@ -598,17 +598,17 @@ namespace cacani {
 			float dy = event->y() - lastPos.y();
 
 			lastPos = event->pos();
-			if (event->buttons() == Qt::LeftButton && m_IKEnabled){
+			if (event->buttons() == Qt::LeftButton && m_IKEnabled && canvasState != STATE_BUILDER){
 				updateIKGoal(dx, dy, 0);
 			}
-			else if (event->buttons() == Qt::RightButton && m_IKEnabled){
+			else if (event->buttons() == Qt::RightButton && m_IKEnabled && canvasState != STATE_BUILDER){
 				updateIKGoal(dx, 0, dy);
 			}
-			else if (event->buttons() & Qt::LeftButton) {
+			else if (event->buttons() & Qt::LeftButton && canvasState == STATE_CAMERA) {
 				xTrans += dx/16;
 				yTrans += dy/16;
 			}
-			else if (event->buttons() & Qt::RightButton) {
+			else if (event->buttons() & Qt::RightButton && canvasState == STATE_CAMERA) {
 				setXRotation(xRot + 8 * dy);
 				setZRotation(zRot + 8 * dx);
 			}
@@ -616,22 +616,25 @@ namespace cacani {
 		}
 
 		void SheetCanvas::wheelEvent(QWheelEvent *event) {
-
 			//Mouse scrolls forward
-			if (event->delta() > 0) {
-				zoomInCamera();
+			if (canvasState == STATE_CAMERA) {
+				if (event->delta() > 0) {
+					zoomInCamera();
+				}
+				else
+					zoomOutCamera();
 			}
-			else
-				zoomOutCamera();
 		}
 
 		void SheetCanvas::mouseDoubleClickEvent(QMouseEvent *e) {
 
-			if (e->button() == Qt::RightButton) {
-				revertView();
-			}
-			else if (e->button() == Qt::LeftButton) {
-				restartAnimation();
+			if (canvasState == STATE_CAMERA) {
+				if (e->button() == Qt::RightButton) {
+					revertView();
+				}
+				else if (e->button() == Qt::LeftButton) {
+					restartAnimation();
+				}
 			}
 		}
 
@@ -851,38 +854,46 @@ namespace cacani {
 		}
 
 		void SheetCanvas::keyPressEvent(QKeyEvent *event) {
-			switch (event->key()) {
-			case (Qt::Key_Left): 
-				qDebug() << "Left Arrow Button Pressed.";
-				setYRotation(yRot + 100);
-				break;
-			case (Qt::Key_Right) :
-				setYRotation(yRot - 100);
-				break;
-			case (Qt::Key_Up) :
-				setXRotation(xRot + 100);
-				break;
-			case (Qt::Key_Down) :
-				setXRotation(xRot - 100);
-				break;
-			case (Qt::Key_W) :
-				zoomInCamera();
-				break;
-			case (Qt::Key_A):
-				xTrans += 0.4f;
-				updateGL();
-				break;
-			case (Qt::Key_S) :
-				zoomOutCamera();
-				break;
-			case (Qt::Key_D):
-				xTrans -= 0.4f;
-				updateGL();
-				break;
-
+			
+			if (canvasState == STATE_CAMERA) {
+				switch (event->key()) {
+				case (Qt::Key_Left) :
+					qDebug() << "Left Arrow Button Pressed.";
+					setYRotation(yRot + 100);
+					break;
+				case (Qt::Key_Right) :
+					setYRotation(yRot - 100);
+					break;
+				case (Qt::Key_Up) :
+					setXRotation(xRot + 100);
+					break;
+				case (Qt::Key_Down) :
+					setXRotation(xRot - 100);
+					break;
+				case (Qt::Key_W) :
+					zoomInCamera();
+					break;
+				case (Qt::Key_A) :
+					xTrans += 0.4f;
+					updateGL();
+					break;
+				case (Qt::Key_S) :
+					zoomOutCamera();
+					break;
+				case (Qt::Key_D) :
+					xTrans -= 0.4f;
+					updateGL();
+					break;
+				}
 			}
 
-
+			if (event->key() == Qt::Key_Space) {
+				int newState = canvasState + 1;
+				if (newState > 2)
+					newState = 1;
+				updateState(newState);
+				updateGL();
+			}
 
 		}
 
@@ -958,6 +969,27 @@ namespace cacani {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_TEXTURE_2D);
+		}
+
+
+
+		void SheetCanvas::updateState(int state) {
+			canvasState = state;
+
+			switch (canvasState) {
+			case STATE_CAMERA:
+				sprintf(modeMessage, "Current Mode: Camera");
+				break;
+			case STATE_EDITOR:
+				sprintf(modeMessage, "Current Mode: Editor");
+				break;
+			case STATE_BUILDER:
+				sprintf(modeMessage, "Current Mode: Build Skeleton");
+				revertView();
+				break;
+			default:
+				break;
+			}
 		}
 
 	}

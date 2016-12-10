@@ -36,6 +36,13 @@ namespace cacani {
 		{
 
 			Q_OBJECT
+
+			enum State {
+				STATE_CAMERA = 1,
+				STATE_EDITOR = 2,
+				STATE_BUILDER = 3
+			};
+
 		public:
 
 			SheetCanvas(cacani::controller::LayerController* layerController, QWidget *parent = 0);
@@ -94,7 +101,7 @@ namespace cacani {
 				void zRotationChanged(int angle);
 
 		private:
-			//	void draw();
+			void drawStage();
 
 			int xRot;
 			int yRot;
@@ -114,7 +121,8 @@ namespace cacani {
 			cacani::data::FrameId m_frame;
 			float m_camera_distance;
 
-			
+			int canvasState;
+			char modeMessage[30];
 
 			Arm* m_IKArm;
 			Point3f m_goal;
@@ -146,6 +154,8 @@ namespace cacani {
 			void toggleViewMesh();
 			void renderImage(ImageFile img);
 			void renderMesh(ImageFile img);
+			
+			void updateState(int state);
 
 			private slots:
 				void playCanvas();

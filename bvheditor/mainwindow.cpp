@@ -14,7 +14,8 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 	m_success(0),
 	importedImage(NULL),
 	convertedImage(NULL),
-	meshImage(NULL)
+	meshImage(NULL),
+	EditorState(STATE_CAMERA)
 {
 	QLOG_INFO() << "MainWindow:" << "Started";
 
@@ -73,54 +74,69 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 	//third menu connections
 	connect(action_view_toolbar, SIGNAL(triggered(bool)), this, SLOT(viewToolBar(bool)));
 
+	//Mode menu button
+	QMenu* menu4 = new QMenu("Mode");
+	QAction* action_camera_mode = new QAction("Camera Mode", menu4);
+	QAction* action_edit_mode = new QAction("Edit Mode", menu4);
+	QAction* action_build_mode = new QAction("Build Skeleton Mode", menu4);
 
-	//fourth menu button
-	QMenu* menu4 = new QMenu("Play");
-	QAction* action_play_all = new QAction("Play Whole BVH File", menu4);
-	QAction* action_play_selected = new QAction("Play Selected Frames", menu4);
-	QAction* action_stop = new QAction("Stop and Restart Animation", menu4);
+	menu4->addAction(action_camera_mode);
+	menu4->addAction(action_edit_mode);
+	menu4->addAction(action_build_mode);
 
-	menu4->addAction(action_play_all);
-	menu4->addAction(action_play_selected);
-	menu4->addAction(action_stop);
+	//Mode menu connections
+	connect(action_camera_mode, SIGNAL(triggered(bool)), this, SLOT(cameraMode()));
+	connect(action_edit_mode, SIGNAL(triggered(bool)), this, SLOT(editorMode()));
+	connect(action_build_mode, SIGNAL(triggered(bool)), this, SLOT(builderMode()));
 
-	//fourth menu connections
+
+	//Play menu button
+	QMenu* menu5 = new QMenu("Play");
+	QAction* action_play_all = new QAction("Play Whole BVH File", menu5);
+	QAction* action_play_selected = new QAction("Play Selected Frames", menu5);
+	QAction* action_stop = new QAction("Stop and Restart Animation", menu5);
+
+	menu5->addAction(action_play_all);
+	menu5->addAction(action_play_selected);
+	menu5->addAction(action_stop);
+
+	//Play menu connections
 	connect(action_play_all, SIGNAL(triggered(bool)), this, SLOT(playAnimation()));
 	connect(action_play_selected, SIGNAL(triggered(bool)), this, SLOT(playSelected()));
 	connect(action_stop, SIGNAL(triggered(bool)), this, SLOT(stopAnimation()));
 
 
-	//fifth menu button
-	QMenu* menu5 = new QMenu("Frames");
-	QAction* action_add_frames = new QAction("Insert New", menu5);
-	QMenu* menu51 = new QMenu("Quick Insert");
-	QAction* action_add_1 = new QAction("Insert 1 Frame", menu51);
-	QAction* action_add_5 = new QAction("Insert 5 Frames", menu51);
-	QAction* action_add_10 = new QAction("Insert 10 Frames", menu51);
-	QMenu* menu52 = new QMenu("Delete");
-	QAction* action_delete_current = new QAction("Delete Current Frame", menu52);
-	QAction* action_delete_all = new QAction("Delete All Frames", menu52);
-	QAction* action_delete_selected = new QAction("Delete Selected Frames", menu52);
-	QAction* action_make_T = new QAction("T Pose Current Frame", menu5);
-	QAction* action_ground_current = new QAction("Ground Current Frame", menu5);
+	//Frames menu button
+	QMenu* menu6 = new QMenu("Frames");
+	QAction* action_add_frames = new QAction("Insert New", menu6);
+	QMenu* menu61 = new QMenu("Quick Insert");
+	QAction* action_add_1 = new QAction("Insert 1 Frame", menu61);
+	QAction* action_add_5 = new QAction("Insert 5 Frames", menu61);
+	QAction* action_add_10 = new QAction("Insert 10 Frames", menu61);
+	QMenu* menu62 = new QMenu("Delete");
+	QAction* action_delete_current = new QAction("Delete Current Frame", menu62);
+	QAction* action_delete_all = new QAction("Delete All Frames", menu62);
+	QAction* action_delete_selected = new QAction("Delete Selected Frames", menu62);
+	QAction* action_make_T = new QAction("T Pose Current Frame", menu6);
+	QAction* action_ground_current = new QAction("Ground Current Frame", menu6);
 	
 	//SubMenu - Add
-	menu51->addAction(action_add_1);
-	menu51->addAction(action_add_5);
-	menu51->addAction(action_add_10);
+	menu61->addAction(action_add_1);
+	menu61->addAction(action_add_5);
+	menu61->addAction(action_add_10);
 
 	//SubMenu - Delete
-	menu52->addAction(action_delete_current);
-	menu52->addAction(action_delete_all);
-	menu52->addAction(action_delete_selected);
+	menu62->addAction(action_delete_current);
+	menu62->addAction(action_delete_all);
+	menu62->addAction(action_delete_selected);
 	
-	menu5->addAction(action_add_frames);
-	menu5->addMenu(menu51);
-	menu5->addMenu(menu52);
-	menu5->addAction(action_make_T);
-	menu5->addAction(action_ground_current);
+	menu6->addAction(action_add_frames);
+	menu6->addMenu(menu61);
+	menu6->addMenu(menu62);
+	menu6->addAction(action_make_T);
+	menu6->addAction(action_ground_current);
 	
-	//Fifth menu connections
+	//Frames menu connections
 	connect(action_add_frames, SIGNAL(triggered(bool)), this, SLOT(addFrames()));
 	connect(action_add_1, SIGNAL(triggered(bool)), this, SLOT(addOne()));
 	connect(action_add_5, SIGNAL(triggered(bool)), this, SLOT(addFive()));
@@ -132,11 +148,14 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 	connect(action_ground_current, SIGNAL(triggered(bool)), this, SLOT(groundModel()));
 
 	
-	//sixth menu button
-	QMenu* menu6 = new QMenu("Help");
-	QAction* action_view_controls = new QAction("View Controls", menu6);
+	//Help menu button
+	QMenu* menu7 = new QMenu("Help");
+	QAction* action_view_controls = new QAction("View Controls", menu7);
 
-	menu6->addAction(action_view_controls);
+	//Help Menu Connections	
+	connect(action_view_controls, SIGNAL(triggered(bool)), this, SLOT(viewControls()));
+
+	menu7->addAction(action_view_controls);
 
 	//Set up menubar
 	menubar->addMenu(menu1);
@@ -145,9 +164,9 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 	menubar->addMenu(menu4);
 	menubar->addMenu(menu5);
 	menubar->addMenu(menu6);
+	menubar->addMenu(menu7);
 
-	//Sixth Menu Connections	
-	connect(action_view_controls, SIGNAL(triggered(bool)), this, SLOT(viewControls()));
+	
 
 
 	//-------------------------------------------------------------------------------------
@@ -477,6 +496,23 @@ void MainWindow::deleteAllImages() {
 		m_ImageListWidget->update();
 	}
 }
+
+//-----------------------------------------------------------------------------------------------------------
+//                                       State Related Slots
+//-----------------------------------------------------------------------------------------------------------
+
+void MainWindow::cameraMode() {
+	m_SheetCanvas->updateState(STATE_CAMERA);
+}
+
+void MainWindow::editorMode() {
+	m_SheetCanvas->updateState(STATE_EDITOR);
+}
+
+void MainWindow::builderMode() {
+	m_SheetCanvas->updateState(STATE_BUILDER);
+}
+
 
 
 //-----------------------------------------------------------------------------------------------------------

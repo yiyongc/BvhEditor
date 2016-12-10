@@ -45,6 +45,12 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+	enum State {
+		STATE_CAMERA = 1,
+		STATE_EDITOR = 2,
+		STATE_BUILDER = 3
+	};
+
 public:
 	MainWindow(QApplication* app, QWidget *parent = 0);
 	~MainWindow();
@@ -89,6 +95,11 @@ public:
 		void deleteImage();
 		void deleteAllImages();
 
+		//State related
+		void cameraMode();
+		void editorMode();
+		void builderMode();
+
 
 private:
 	LayerGroup* m_root;
@@ -105,7 +116,9 @@ private:
 	JointEditorWidget* m_JointEditorWidget;
 	QApplication* m_app;
 	QToolBar* toolbar;
-	ImageListWidget* m_ImageListWidget;
+	ImageListWidget* m_ImageListWidget; 
+
+	int EditorState;
 
 	//View image, may be commented out in the future (remove function to view in import image)
 	QLabel* myView;
