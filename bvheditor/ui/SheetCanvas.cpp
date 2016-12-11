@@ -48,6 +48,7 @@ namespace cacani {
 			m_timer = new QTimer(this);
 			m_timer_selected = new QTimer(this);
 			updateState(STATE_CAMERA);
+			m_skeleton = NULL;
 
 			connect(m_timer_selected, SIGNAL(timeout()), this, SLOT(playCanvasSelected()));
 			connect(m_timer, SIGNAL(timeout()), this, SLOT(playCanvas()));
@@ -448,6 +449,8 @@ namespace cacani {
 		{
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			
+			setupProjection();
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
@@ -494,6 +497,37 @@ namespace cacani {
 					RenderIKBone();
 				}
 
+			}
+			else {
+				char message1[50];
+				sprintf(message1, "Currently Selected Vertex: %d", selectedVertex);
+				drawMessage(1, message1);
+
+
+				char debug[50];
+				if (drawKey) {
+					sprintf(debug, "Delete Key is Pressed");
+				}
+				else {
+					sprintf(debug, "No key/random key pressed");
+				}
+				drawMessage(2, debug);
+			}
+				if (drawSkel != false)
+					drawSkeleton();
+			
+		}
+
+
+		void SheetCanvas::setupProjection() {
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+
+			if (canvasState == STATE_BUILDER) {
+				glOrtho(-2, 2, -2, 2, 1.0, 15.0);
+			}
+			else {
+				gluPerspective(45, viewRatio, 1, 500);
 			}
 		}
 
@@ -564,10 +598,13 @@ namespace cacani {
 		{
 			glViewport(0, 0, width, height);
 
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			gluPerspective(45, (double)width / height, 1, 500);
 
+			viewRatio = (float)width / (float)height;
+
+			/*glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			gluPerspective(45, (double)width / height, 1, 500);*/
+			//glOrtho(-2, +2, -2, +2, 1.0, 15.0);
 			win_width = width;
 			win_height = height;
 		}
@@ -576,6 +613,35 @@ namespace cacani {
 		{
 			lastPos = event->pos();
 			this->setFocus();
+
+			if (canvasState == STATE_BUILDER) {
+				//Get position of mouse click
+				mouseToWorld(lastPos.x(), lastPos.y());
+
+				if (event->button() == Qt::LeftButton) {
+					if (m_skeleton != NULL) {
+						for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
+							SkeletonVertex* v1 = m_skeleton->getVertices()[i];
+
+							QVector2D vertexCenter(v1->getXPos(), v1->getYPos());
+
+							//Check for collision
+							clickCollided = clickCollision(vertexCenter);
+
+							//Update selected vertex if click collides
+							if (clickCollided) {
+								updateSelectedVertex(v1->getID());
+
+								//Allow vertex to be moved
+								vertexMoveSelected = true;
+								break;
+							}
+						}
+					}
+				}
+
+				update();
+			}
 
 			if (event->buttons() & Qt::MidButton && canvasState != STATE_BUILDER) {
 				if (playStatus == false) {
@@ -612,8 +678,53 @@ namespace cacani {
 				setXRotation(xRot + 8 * dy);
 				setZRotation(zRot + 8 * dx);
 			}
+			else if (canvasState == STATE_BUILDER) {
+				if (vertexMoveSelected) {
+					if (m_skeleton != NULL) {
+						//Get position of mouse in world coordinates
+						mouseToWorld(lastPos.x(), lastPos.y());
+						SkeletonVertex* v0 = m_skeleton->getVertex(selectedVertex);
+						v0->setXPos(objX);
+						v0->setYPos(objY);
+					}
+				}
+			}
 
 		}
+
+		void SheetCanvas::mouseReleaseEvent(QMouseEvent* event) {
+			lastPos = event->pos();
+
+			if (canvasState == STATE_BUILDER) {
+				//Update no movement state on mouse release
+				vertexMoveSelected = false;
+
+				if (event->button() == Qt::LeftButton) {
+					if (!clickCollided) {
+						//Check if skeleton exists
+						if (m_skeleton == NULL) {
+							m_skeleton = new Skeleton();
+							drawSkel = true;
+						}
+
+						//Get position of mouse release point
+						mouseToWorld(lastPos.x(), lastPos.y());
+
+						//Add vertex into skeleton structure
+						SkeletonVertex* vertexToAdd = new SkeletonVertex(objX, objY);
+						vertexToAdd->setID(idToAdd++);
+						m_skeleton->addVertex(vertexToAdd);
+
+						//Update selection vertex
+						updateSelectedVertex(vertexToAdd->getID());
+						//m_skeleton->setSelectedVertex(vertexToAdd->getID());
+						//selectedVertex = vertexToAdd->getID();
+					}
+				}
+			}
+
+		}
+
 
 		void SheetCanvas::wheelEvent(QWheelEvent *event) {
 			//Mouse scrolls forward
@@ -886,6 +997,28 @@ namespace cacani {
 					break;
 				}
 			}
+			else if (canvasState == STATE_BUILDER) {
+				if (event->key() == Qt::Key_Delete) {
+					drawKey = true;
+
+					if (m_skeleton != NULL) {
+						if (m_skeleton->getVertexCount() != 0) {
+							//Get vertex to delete and parentId
+							int idToDelete = selectedVertex;
+							int vertexParent = m_skeleton->getVertex(selectedVertex)->getParent();
+
+							//Update new selected vertex to parent and reconnect children to parent
+							if (vertexParent != -1) {
+								updateSelectedVertex(vertexParent);
+								m_skeleton->removeVertex(idToDelete);
+							}
+						}
+					}
+
+				}
+				else
+					drawKey = false;
+			}
 
 			if (event->key() == Qt::Key_Space) {
 				int newState = canvasState + 1;
@@ -990,6 +1123,134 @@ namespace cacani {
 			default:
 				break;
 			}
+		}
+
+
+		void SheetCanvas::drawVertex(SkeletonVertex* v) {
+			double x = v->getXPos();
+			double y = v->getYPos();
+			qglColor(Qt::blue);
+			glBegin(GL_POLYGON);
+			glVertex2d(x - vertexRadius, y - vertexRadius);
+			glVertex2d(x + vertexRadius, y - vertexRadius);
+			glVertex2d(x + vertexRadius, y + vertexRadius);
+			glVertex2d(x - vertexRadius, y + vertexRadius);
+			glEnd();
+			update();
+		}
+
+		void SheetCanvas::drawBone(SkeletonVertex* v1) {
+			int parentID = v1->getParent();
+
+			//Check if parent from vertex exists
+			if (parentID != -1) {
+				SkeletonVertex* v2 = NULL;
+				v2 = m_skeleton->getVertex(parentID);
+
+				if (v2 == NULL)
+					return;
+
+				glDisable(GL_LIGHTING);
+				qglColor(QColor(250, 184, 70));
+				glLineWidth(2.0f);  // Yellow/Orange-ish line center
+
+				glBegin(GL_LINES);
+				glVertex2d(v1->getXPos(), v1->getYPos());
+				glVertex2d(v2->getXPos(), v2->getYPos());
+				glEnd();
+
+
+				qglColor(Qt::black);
+				glLineWidth(4.0f);  // Black border
+
+				glBegin(GL_LINES);
+				glVertex2d(v1->getXPos(), v1->getYPos());
+				glVertex2d(v2->getXPos(), v2->getYPos());
+				glEnd();
+			}
+		}
+
+		void SheetCanvas::drawSkeleton() {
+			for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
+
+				drawVertex(m_skeleton->getVertices()[i]);
+				drawBone(m_skeleton->getVertices()[i]);
+			}
+
+			highlightSelectedVertex();
+		}
+
+
+		void SheetCanvas::highlightSelectedVertex() {
+			if (selectedVertex < 0)
+				return;
+
+			SkeletonVertex* vertexSelected;
+			for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
+				if (m_skeleton->getVertices().at(i)->getID() == selectedVertex)
+					vertexSelected = m_skeleton->getVertices().at(i);
+			}
+
+
+			float highlightBorder = vertexRadius + 0.005;
+
+
+			qglColor(Qt::red);
+			glLineWidth(2.0f);
+			glBegin(GL_LINE_LOOP);
+			glVertex2d(vertexSelected->getXPos() - highlightBorder, vertexSelected->getYPos() - highlightBorder);
+			glVertex2d(vertexSelected->getXPos() + highlightBorder, vertexSelected->getYPos() - highlightBorder);
+			glVertex2d(vertexSelected->getXPos() + highlightBorder, vertexSelected->getYPos() + highlightBorder);
+			glVertex2d(vertexSelected->getXPos() - highlightBorder, vertexSelected->getYPos() + highlightBorder);
+			glEnd();
+			update();
+		}
+
+
+		void SheetCanvas::mouseToWorld(double x, double y) {
+			//Use of QT to determine x, y position on the widget
+			x = this->mapFromGlobal(QCursor::pos()).x();
+			y = this->mapFromGlobal(QCursor::pos()).y();
+
+			//Setting up of view, model, projection matrices
+			GLint viewport[4];
+			glGetIntegerv(GL_VIEWPORT, viewport);
+
+			GLdouble modelview[16];
+			glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+
+			GLdouble projection[16];
+			glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+			GLfloat winX, winY, winZ;
+
+
+			winX = (float)x;
+			//Convert normal coordinate to OpenGL-format coordinate
+			winY = (float)viewport[3] - y;
+
+			//Obtain depth
+			glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+			//Obtain values for world coordinates
+			gluUnProject(winX, winY, winZ, modelview, projection, viewport, &objX, &objY, &objZ);
+		}
+
+
+		bool SheetCanvas::clickCollision(QVector2D pointCenter) {
+			QVector2D mouseClickPos(objX, objY);
+
+			float distance = pointCenter.distanceToPoint(mouseClickPos);
+
+			if (distance <= vertexRadius * 2)
+				return true;
+			else
+				return false;
+		}
+
+		void SheetCanvas::updateSelectedVertex(int id) {
+			selectedVertex = id;
+			m_skeleton->setSelectedVertex(id);
 		}
 
 	}

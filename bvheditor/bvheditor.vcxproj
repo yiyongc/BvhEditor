@@ -237,6 +237,8 @@
     <ClCompile Include="OpenToonz\trop_borders.cpp" />
     <ClCompile Include="OpenToonz\tsmartpointer.cpp" />
     <ClCompile Include="OpenToonz\tstring.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="SkeletonVertex.cpp" />
     <ClCompile Include="ui\DeleteSelectedDialog.cpp" />
     <ClCompile Include="ui\ExportDialog.cpp" />
     <ClCompile Include="ui\ImageListWidget.cpp" />
@@ -1044,6 +1046,8 @@
     <ClInclude Include="OpenToonz\common\trop\runsmap.h" />
     <ClInclude Include="OpenToonz\gutil.h" />
     <ClInclude Include="OpenToonz\meshbuilder.h" />
+    <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="SkeletonVertex.h" />
     <ClInclude Include="ui\ImageListWidget.h" />
     <CustomBuild Include="OpenToonz\MeshOptionDialog.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

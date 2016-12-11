@@ -15,6 +15,7 @@
 #include "../OpenToonz/meshbuilder.h"
 #include "../data/ImageFile.h"
 #include "../OpenToonz/meshutils.h"
+#include "Skeleton.h"
 
 //using namespace cacani::controller;
 
@@ -81,6 +82,7 @@ namespace cacani {
 			QSize sizeHint() const;
 			void mousePressEvent(QMouseEvent *event);
 			void mouseMoveEvent(QMouseEvent *event);
+			void mouseReleaseEvent(QMouseEvent *event);
 			virtual void wheelEvent(QWheelEvent *event);
 			void mouseDoubleClickEvent(QMouseEvent *event);
 			void keyPressEvent(QKeyEvent *event);
@@ -109,6 +111,7 @@ namespace cacani {
 			float xTrans = 0;
 			float yTrans = 0;
 			float zTrans = 0;
+			float viewRatio = 1;
 			
 			QPoint lastPos;
 			int selectedFirstFrame;
@@ -123,6 +126,8 @@ namespace cacani {
 
 			int canvasState;
 			char modeMessage[30];
+			
+			void setupProjection();
 
 			Arm* m_IKArm;
 			Point3f m_goal;
@@ -135,7 +140,26 @@ namespace cacani {
 			bool viewImages = false;
 			bool viewMesh = false;
 
-			//xiaocai_playAnimation added, Timer for animation
+			//Build skeleton related
+			bool drawSkel = false;
+			Skeleton* m_skeleton;
+			float vertexRadius = 0.020;
+			int idToAdd = 0;
+			bool vertexMoveSelected = false;
+			int selectedVertex = -1;
+			bool clickCollided = false;
+			bool drawKey = false;
+			GLdouble objX = 0.0, objY = 0.0, objZ = 0.0;
+
+			void drawVertex(SkeletonVertex* v);
+			void drawBone(SkeletonVertex* v1);
+			void highlightSelectedVertex();
+			void mouseToWorld(double x, double y);
+			bool clickCollision(QVector2D pointCenter);
+			void updateSelectedVertex(int id);
+			void drawSkeleton();
+
+
 		public:
 			void animate();
 			void animateSelected();
