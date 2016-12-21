@@ -407,21 +407,29 @@ void MainWindow::importNewImage(){
 		m_SheetCanvas->m_imageGroup->m_images.push_back(img);
 
 		m_ImageListWidget->update();
+		m_ImageListWidget->item(0)->setSelected(true);
+		m_ImageListWidget->setCurrentRow(0);
+		
 	}
 }
 
-void MainWindow::convertImage() {
-	if (!importedImage)	{
+void MainWindow::convertImage(QImage* img) {
+
+	/*if (!importedImage)	{
 		QErrorMessage* error = new QErrorMessage;
 		error->showMessage("No imported image!");
 	}
-	else {
-		convertedImage = rasterFromQImage(*importedImage);
-	}
+	else {*/
+		convertedImage = rasterFromQImage(*img);
+	/*}*/
 }
 
 void MainWindow::createMesh() {
-	if (importedImage) {
+	int imageSelection = m_ImageListWidget->currentIndex().row();
+
+	if (imageSelection != -1) {
+		QImage* selectedImage = &m_SheetCanvas->m_imageGroup->m_images.at(imageSelection).getQImage();
+	
 		MeshBuilderOptions(opts);
 
 		//Set up options
@@ -430,7 +438,7 @@ void MainWindow::createMesh() {
 
 		if (retCode == QDialog::Accepted) {
 
-			convertImage();
+			convertImage(selectedImage);
 
 			meshImage = buildMesh(convertedImage, opts);
 			TPointD meshDpi(300, 300);
@@ -440,14 +448,13 @@ void MainWindow::createMesh() {
 			transform(meshImage, TScale(meshDpi.x / rasDpi.x, meshDpi.y / rasDpi.y) *	TTranslation(-worldOriginPos));
 
 			meshImage->setDpi(meshDpi.x, meshDpi.y);
-			//glView->setMeshImage(meshImg);
-			
+		
 
-			m_SheetCanvas->m_imageGroup->m_images.back().setMeshImage(meshImage);
+			m_SheetCanvas->m_imageGroup->m_images.at(imageSelection).setMeshImage(meshImage);
 		}
 	}
 	else {
-		int reply = QMessageBox::question(this, "Error!", "No imported image to convert to mesh!", QMessageBox::Ok);
+		int reply = QMessageBox::question(this, "Error!", "No selected/imported image to convert to mesh!", QMessageBox::Ok);
 
 		if (reply)
 			importNewImage();
@@ -479,6 +486,8 @@ void MainWindow::deleteImage() {
 		}
 
 		m_ImageListWidget->update();
+		m_ImageListWidget->item(0)->setSelected(true);
+		m_ImageListWidget->setCurrentRow(0);
 		m_SheetCanvas->update();
 	}
 }

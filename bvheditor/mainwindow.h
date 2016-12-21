@@ -129,7 +129,7 @@ private:
 	QImage* importedImage;
 	TRaster32P convertedImage;
 	TMeshImageP meshImage;
-	void convertImage();
+	void convertImage(QImage* img);
 
 public:
 	bool m_success;
