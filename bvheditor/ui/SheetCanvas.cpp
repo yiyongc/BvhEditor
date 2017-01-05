@@ -33,13 +33,14 @@ namespace cacani {
 		const int     max_bvh_file_number = 30;
 		const float   figure_scale = 0.02f;
 
-		SheetCanvas::SheetCanvas(cacani::controller::LayerController* layerController, QWidget *parent) :m_layerController(layerController)
+		SheetCanvas::SheetCanvas(cacani::controller::LayerController* layerController, QWidget *parent) :m_layerController(layerController), m_imageList(NULL)
 		{
 			xRot = 0;
 			yRot = 0;
 			zRot = 0;
 			m_sheet = NULL;
 			m_imageGroup = new ImageGroup;
+			m_image = NULL;
 			m_base = m_layerController->getCurrentRoot();
 			m_frame = 0;
 			m_camera_distance = 4.0f; //
@@ -52,11 +53,19 @@ namespace cacani {
 
 			connect(m_timer_selected, SIGNAL(timeout()), this, SLOT(playCanvasSelected()));
 			connect(m_timer, SIGNAL(timeout()), this, SLOT(playCanvas()));
+
+			//Updates GL Widget every 10ms
+			QTimer* timer = new QTimer(this);
+			connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+			timer->start(10);
 		}
 
 
 		SheetCanvas::~SheetCanvas(){}
 
+		void SheetCanvas::setImageList(ImageListWidget* imageList) {
+			m_imageList = imageList;
+		}
 
 		void  SheetCanvas::RenderFigure(float scale)
 		{
@@ -371,9 +380,9 @@ namespace cacani {
 		static void qNormalizeAngle(int &angle)
 		{
 			while (angle < 0)
-				angle += 360 * 16;
+				angle += 360;// *16;
 			while (angle > 360)
-				angle -= 360 * 16;
+				angle -= 360;// *16;
 		}
 
 		void SheetCanvas::setXRotation(int angle)
@@ -454,11 +463,19 @@ namespace cacani {
 
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
-			glTranslatef(xTrans, yTrans -2, -4-m_camera_distance);
-			glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
-			glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
-			glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
 
+			if (canvasState == STATE_EDITOR) {
+				glTranslatef(0, 0 - 2, -4 - m_camera_distance);
+				glRotatef(0 / 16.0, 1.0, 0.0, 0.0);
+				glRotatef(0 / 16.0, 0.0, 1.0, 0.0);
+				glRotatef(0 / 16.0, 0.0, 0.0, 1.0);
+			}
+			else {
+				glTranslatef(xTrans, yTrans - 2, -4 - m_camera_distance);
+				glRotatef(xRot, 1.0, 0.0, 0.0);
+				glRotatef(yRot, 0.0, 1.0, 0.0);
+				glRotatef(zRot, 0.0, 0.0, 1.0);
+			}
 			
 			//gluLookAt(0 + xTrans, 2 + yTrans, -4-m_camera_distance + zTrans, xTrans, yTrans, zTrans, 0.0f, 1.0f, 0.0f);
 
@@ -484,10 +501,17 @@ namespace cacani {
 				}
 				if (viewImages) {
 					for (int i = 0; i < m_imageGroup->size(); i++) {
+						ImageFile currentImg = m_imageGroup->m_images[i];
 						if (m_imageGroup->m_images[i].m_imgTexture == 0)
 							createTextureForGL(m_imageGroup->m_images[i]);
-						else
+						else {
+							glPushMatrix();
+							m_imageGroup->m_images[i].setTransformMatrix(m_imageGroup->m_images[i].getImageRotation(), m_imageGroup->m_images[i].getImageXTrans(), m_imageGroup->m_images[i].getImageYTrans(), currentImg.getImageScale());
+							GLfloat* matrix = m_imageGroup->m_images[i].getTransformMatrix();
+							glMultMatrixf(matrix);
 							renderImage(m_imageGroup->m_images[i]);
+							glPopMatrix();
+						}
 					}
 				}
 				glScaled(100, 100, 1);				
@@ -525,6 +549,9 @@ namespace cacani {
 
 			if (canvasState == STATE_BUILDER) {
 				glOrtho(-2, 2, -2, 2, 1.0, 15.0);
+			}
+			else if (canvasState == STATE_EDITOR) {
+				glOrtho(-3, 3, -3, 3, -4.0, 15.0);
 			}
 			else {
 				gluPerspective(45, viewRatio, 1, 500);
@@ -642,8 +669,19 @@ namespace cacani {
 
 				update();
 			}
+			else if (canvasState == STATE_EDITOR) {
+				int imageSelection = m_imageList->currentIndex().row();
 
-			if (event->buttons() & Qt::MidButton && canvasState != STATE_BUILDER) {
+				if (imageSelection != -1) {
+					m_image = &m_imageGroup->m_images.at(imageSelection);
+					zRot = m_image->getImageRotation();
+					xTrans = m_image->getImageXTrans();
+					yTrans = m_image->getImageYTrans();
+
+				}
+			}
+
+			if (event->buttons() & Qt::MidButton && canvasState == STATE_CAMERA) {
 				if (playStatus == false) {
 					playStatus = true;
 				}
@@ -678,6 +716,16 @@ namespace cacani {
 				setXRotation(xRot + 8 * dy);
 				setZRotation(zRot + 8 * dx);
 			}
+			else if (event->buttons() & Qt::LeftButton && canvasState == STATE_EDITOR && m_image != NULL) {
+				xTrans += dx;
+				yTrans -= dy;
+				m_image->setImageXTrans(xTrans);
+				m_image->setImageYTrans(yTrans);
+			}
+			else if (event->buttons() & Qt::RightButton && canvasState == STATE_EDITOR && m_image != NULL) {
+				setZRotation(zRot - dx/4);
+				m_image->setImageRotation(zRot);
+			}
 			else if (canvasState == STATE_BUILDER) {
 				if (vertexMoveSelected) {
 					if (m_skeleton != NULL) {
@@ -700,6 +748,8 @@ namespace cacani {
 				vertexMoveSelected = false;
 
 				if (event->button() == Qt::LeftButton) {
+
+
 					if (!clickCollided) {
 						//Check if skeleton exists
 						if (m_skeleton == NULL) {
@@ -722,18 +772,35 @@ namespace cacani {
 					}
 				}
 			}
-
 		}
 
 
 		void SheetCanvas::wheelEvent(QWheelEvent *event) {
-			//Mouse scrolls forward
 			if (canvasState == STATE_CAMERA) {
+				//Mouse scrolls forward
 				if (event->delta() > 0) {
 					zoomInCamera();
 				}
 				else
 					zoomOutCamera();
+			}
+			else if (canvasState == STATE_EDITOR) {
+
+				if (m_imageList->currentIndex().row() != -1) {
+					m_image = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					zRot = m_image->getImageRotation();
+					xTrans = m_image->getImageXTrans();
+					yTrans = m_image->getImageYTrans();
+				}
+
+				float currentImageScale = m_image->getImageScale();
+
+				if (event->delta() > 0) 
+					currentImageScale += 0.02;
+				else
+					currentImageScale -= 0.02;
+				m_image->setImageScale(currentImageScale);
+				update();
 			}
 		}
 
@@ -1107,14 +1174,44 @@ namespace cacani {
 
 
 		void SheetCanvas::updateState(int state) {
+			int oldState = canvasState;
+			
+			if (oldState == STATE_CAMERA) {
+				//Store the old translatation & rotation values
+				xTransStored = xTrans;
+				yTransStored = yTrans;
+				zTransStored = zTrans;
+				xRotStored = xRot;
+				yRotStored = yRot;
+				zRotStored = zRot;
+
+				//resetValues
+				xRot = 0, yRot = 0, zRot = 0;
+				xTrans = 0, yTrans = 0, zTrans = 0;
+			}
 			canvasState = state;
 
 			switch (canvasState) {
 			case STATE_CAMERA:
 				sprintf(modeMessage, "Current Mode: Camera");
+				//Restore camera settings
+				xTrans = xTransStored;
+				yTrans = yTransStored;
+				zTrans = zTransStored;
+				xRot = xRotStored;
+				yRot = yRotStored;
+				zRot = zRotStored;
 				break;
 			case STATE_EDITOR:
 				sprintf(modeMessage, "Current Mode: Editor");
+				
+				//Update current selected image if any
+				if (m_imageList->currentIndex().row() != -1) {
+					m_image = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					zRot = m_image->getImageRotation();
+					xTrans = m_image->getImageXTrans();
+					yTrans = m_image->getImageYTrans();
+				}
 				break;
 			case STATE_BUILDER:
 				sprintf(modeMessage, "Current Mode: Build Skeleton");

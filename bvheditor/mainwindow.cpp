@@ -228,7 +228,7 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 
 	if (m_success){
 
-		m_SheetCanvas = new cacani::ui::SheetCanvas(m_LayerController);
+		m_SheetCanvas = new cacani::ui::SheetCanvas(m_LayerController, m_ImageListWidget);
 
 
 		QSplitter *split1 = new QSplitter;
@@ -250,6 +250,7 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 		m_JointTreeWidget = new cacani::ui::JointTreeWidget(m_LayerController, m_SheetCanvas, m_JointTreeListModel);
 		
 		m_ImageListWidget = new ImageListWidget(m_SheetCanvas->m_imageGroup);
+		m_SheetCanvas->setImageList(m_ImageListWidget);
 
 		QWidget* jointTreeContainer = new QWidget; 
 		QVBoxLayout* jointTreeLayout = new QVBoxLayout;

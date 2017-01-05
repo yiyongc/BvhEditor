@@ -14,6 +14,7 @@
 #include "../data/Arm.h"
 #include "../OpenToonz/meshbuilder.h"
 #include "../data/ImageFile.h"
+#include "../ui/ImageListWidget.h"
 #include "../OpenToonz/meshutils.h"
 #include "Skeleton.h"
 
@@ -49,6 +50,7 @@ namespace cacani {
 			SheetCanvas(cacani::controller::LayerController* layerController, QWidget *parent = 0);
 			~SheetCanvas();
 
+			void setImageList(ImageListWidget* imageList);
 			//	void  RenderFigure(int frame_no, float scale = 1.0f);
 			void  RenderFigure(float scale = 1.0f);
 			void  RenderFigure(cacani::data::Joint * root, const double * data, float scale = 1.0f, bool descendent = false);
@@ -72,7 +74,7 @@ namespace cacani {
 			void setLastFrame(int last) { selectedLastFrame = last; }
 			
 			ImageGroup* m_imageGroup;
-
+			ImageFile* m_image;
 		protected:
 			void initializeGL();
 			void paintGL();
@@ -108,10 +110,14 @@ namespace cacani {
 			int xRot;
 			int yRot;
 			int zRot;
+			int xRotStored = 0, yRotStored = 0, zRotStored = 0;
 			float xTrans = 0;
 			float yTrans = 0;
 			float zTrans = 0;
+			float xTransStored = 0, yTransStored = 0, zTransStored = 0;
 			float viewRatio = 1;
+			
+			float imageScale = 1;
 			
 			QPoint lastPos;
 			int selectedFirstFrame;
@@ -122,6 +128,7 @@ namespace cacani {
 			cacani::data::LayerGroup* m_base;
 			cacani::controller::LayerController* m_layerController;
 			cacani::data::FrameId m_frame;
+			ImageListWidget* m_imageList;
 			float m_camera_distance;
 
 			int canvasState;

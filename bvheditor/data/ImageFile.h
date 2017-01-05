@@ -17,16 +17,28 @@ public:
 	void setQImage(QImage img);
 	TMeshImageP getMeshImage();
 	void setMeshImage(TMeshImageP mesh);
-	TAffine getTransformMatrix();
-	void setTransformMatrix(TAffine mat);
+	GLfloat* getTransformMatrix();
+	void setTransformMatrix(float rotAngle, float xTrans, float yTrans, float scale);
 	GLuint m_imgTexture;
+
+	int getImageRotation();
+	float getImageXTrans();
+	float getImageYTrans();
+	float getImageScale();
+	void setImageRotation(int rot);
+	void setImageXTrans(float xTrans);
+	void setImageYTrans(float yTrans);
+	void setImageScale(float scaleValue);
 
 private:
 	QString m_imgName;
 	QImage m_img;
 	TMeshImageP m_meshImg;
-	TAffine m_transformMatrix;
-	
+	GLfloat m_transformMatrix[16];
+	int rotAngleImg = 0;
+	float xTransImg = 0;
+	float yTransImg = 0;
+	float scaleImg = 1.0;
 };
 
 struct ImageGroup {
