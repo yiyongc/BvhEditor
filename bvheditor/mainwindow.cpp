@@ -403,9 +403,6 @@ void MainWindow::importNewImage(){
 		QFileInfo fileInfo(imageFilePath);
 		imageFileName = fileInfo.completeBaseName();
 
-		//Display in view
-		//myView->setPixmap(QPixmap::fromImage(*importedImage));
-
 		ImageFile img(imageFileName, *importedImage);
 
 		m_SheetCanvas->m_imageGroup->m_images.push_back(img);

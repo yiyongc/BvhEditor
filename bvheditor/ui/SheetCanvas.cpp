@@ -493,7 +493,29 @@ namespace cacani {
 				//Draw the Mesh first before Images so that it overlays
 				//Resize generally
 				glScaled(1.0 / 100, 1.0 / 100, 1);
-				if (viewMesh) {
+
+				if (viewMesh || viewImages) {
+					for (int i = 0; i < m_imageGroup->size(); i++) {
+						ImageFile currImg = m_imageGroup->m_images[i];
+						
+						glPushMatrix();
+						currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+						GLfloat* imgMatrix = currImg.getTransformMatrix();
+						glMultMatrixf(imgMatrix);
+						if (viewMesh) {
+							if (currImg.getMeshImage().getPointer() != NULL)
+								renderMesh(currImg);
+						}
+						if (viewImages) {
+							if (currImg.m_imgTexture == 0)
+								createTextureForGL(currImg);
+							renderImage(currImg);
+						}
+						glPopMatrix();
+					}
+				}
+
+				/*if (viewMesh) {
 					for (int i = 0; i < m_imageGroup->size(); i++) {
 						if (m_imageGroup->m_images[i].getMeshImage().getPointer() != NULL)
 							renderMesh(m_imageGroup->m_images[i]);
@@ -506,14 +528,19 @@ namespace cacani {
 							createTextureForGL(m_imageGroup->m_images[i]);
 						else {
 							glPushMatrix();
-							m_imageGroup->m_images[i].setTransformMatrix(m_imageGroup->m_images[i].getImageRotation(), m_imageGroup->m_images[i].getImageXTrans(), m_imageGroup->m_images[i].getImageYTrans(), currentImg.getImageScale());
+							m_imageGroup->m_images[i].setTransformMatrix(currentImg.getImageRotation(), 
+																		currentImg.getImageXTrans(), 
+																		currentImg.getImageYTrans(), 
+																		currentImg.getImageScale());
 							GLfloat* matrix = m_imageGroup->m_images[i].getTransformMatrix();
 							glMultMatrixf(matrix);
 							renderImage(m_imageGroup->m_images[i]);
 							glPopMatrix();
 						}
 					}
-				}
+				}*/
+
+
 				glScaled(100, 100, 1);				
 
 				//glutSwapBuffers();
