@@ -79,15 +79,18 @@ MainWindow::MainWindow(QApplication* app, QWidget *parent)
 	QAction* action_camera_mode = new QAction("Camera Mode", menu4);
 	QAction* action_edit_mode = new QAction("Edit Mode", menu4);
 	QAction* action_build_mode = new QAction("Build Skeleton Mode", menu4);
+	QAction* action_mapping_mode = new QAction("Skeleton Mapping Mode", menu4);
 
 	menu4->addAction(action_camera_mode);
 	menu4->addAction(action_edit_mode);
 	menu4->addAction(action_build_mode);
+	menu4->addAction(action_mapping_mode);
 
 	//Mode menu connections
 	connect(action_camera_mode, SIGNAL(triggered(bool)), this, SLOT(cameraMode()));
 	connect(action_edit_mode, SIGNAL(triggered(bool)), this, SLOT(editorMode()));
 	connect(action_build_mode, SIGNAL(triggered(bool)), this, SLOT(builderMode()));
+	connect(action_mapping_mode, SIGNAL(triggered(bool)), this, SLOT(mappingMode()));
 
 
 	//Play menu button
@@ -523,7 +526,9 @@ void MainWindow::builderMode() {
 	m_SheetCanvas->updateState(STATE_BUILDER);
 }
 
-
+void MainWindow::mappingMode() {
+	m_SheetCanvas->updateState(STATE_MAPPING);
+}
 
 //-----------------------------------------------------------------------------------------------------------
 //                                       User-BVH Interactions

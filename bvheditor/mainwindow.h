@@ -48,7 +48,8 @@ class MainWindow : public QMainWindow
 	enum State {
 		STATE_CAMERA = 1,
 		STATE_EDITOR = 2,
-		STATE_BUILDER = 3
+		STATE_BUILDER = 3,
+		STATE_MAPPING = 4
 	};
 
 public:
@@ -99,6 +100,7 @@ public:
 		void cameraMode();
 		void editorMode();
 		void builderMode();
+		void mappingMode();
 
 
 private:

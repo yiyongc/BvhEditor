@@ -521,6 +521,19 @@ namespace cacani {
 					RenderIKBone();
 				}
 
+
+				if (canvasState == STATE_MAPPING) {
+					char message1[50], message2[50];
+					sprintf(message1, "X pos clicked: %f  , Y pos clicked: %f ", objX, objY);
+					drawMessage(1, message1);
+
+					if (m_imageGroup->size() != 0) {
+						if (m_imageGroup->m_images[0].getMeshImage().getPointer() != NULL)
+							TMeshImage* m_mesh = m_imageGroup->m_images[0].getMeshImage().getPointer();
+				
+					}
+				}
+
 			}
 			else {
 				char message1[50];
@@ -547,7 +560,7 @@ namespace cacani {
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 
-			if (canvasState == STATE_BUILDER) {
+			if (canvasState == STATE_BUILDER || canvasState == STATE_MAPPING) {
 				glOrtho(-2, 2, -2, 2, 1.0, 15.0);
 			}
 			else if (canvasState == STATE_EDITOR) {
@@ -679,6 +692,10 @@ namespace cacani {
 					yTrans = m_image->getImageYTrans();
 
 				}
+			}
+			else if (canvasState == STATE_MAPPING) {
+				//Get position of mouse click
+				mouseToWorld(lastPos.x(), lastPos.y());
 			}
 
 			if (event->buttons() & Qt::MidButton && canvasState == STATE_CAMERA) {
@@ -1215,6 +1232,10 @@ namespace cacani {
 				break;
 			case STATE_BUILDER:
 				sprintf(modeMessage, "Current Mode: Build Skeleton");
+				revertView();
+				break;
+			case STATE_MAPPING:
+				sprintf(modeMessage, "Current Mode: Skeleton Mapping");
 				revertView();
 				break;
 			default:

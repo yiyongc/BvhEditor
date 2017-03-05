@@ -42,7 +42,8 @@ namespace cacani {
 			enum State {
 				STATE_CAMERA = 1,
 				STATE_EDITOR = 2,
-				STATE_BUILDER = 3
+				STATE_BUILDER = 3,
+				STATE_MAPPING = 4
 			};
 
 		public:
@@ -119,6 +120,7 @@ namespace cacani {
 			
 			float imageScale = 1;
 			
+
 			QPoint lastPos;
 			int selectedFirstFrame;
 			int selectedLastFrame;
