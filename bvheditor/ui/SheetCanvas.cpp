@@ -502,6 +502,7 @@ namespace cacani {
 						currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
 						GLfloat* imgMatrix = currImg.getTransformMatrix();
 						glMultMatrixf(imgMatrix);
+
 						if (viewMesh) {
 							if (currImg.getMeshImage().getPointer() != NULL)
 								renderMesh(currImg);
@@ -553,12 +554,9 @@ namespace cacani {
 					char message1[50], message2[50];
 					sprintf(message1, "X pos clicked: %f  , Y pos clicked: %f ", objX, objY);
 					drawMessage(1, message1);
-
-					if (m_imageGroup->size() != 0) {
-						if (m_imageGroup->m_images[0].getMeshImage().getPointer() != NULL)
-							TMeshImage* m_mesh = m_imageGroup->m_images[0].getMeshImage().getPointer();
-				
-					}
+					sprintf(message2, "Selected Mesh Vertex ID: %d", selectedVertex);
+					drawMessage(2, message2);
+					
 				}
 
 			}
@@ -723,6 +721,7 @@ namespace cacani {
 			else if (canvasState == STATE_MAPPING) {
 				//Get position of mouse click
 				mouseToWorld(lastPos.x(), lastPos.y());
+				selectedVertex = collisionMesh();
 			}
 
 			if (event->buttons() & Qt::MidButton && canvasState == STATE_CAMERA) {
@@ -1393,10 +1392,70 @@ namespace cacani {
 				return false;
 		}
 
+
+		int SheetCanvas::collisionMesh() {
+			//Get mouse click position
+			QVector2D mouseClickPos(objX, objY);
+			
+			//Obtain mesh
+			if (m_imageGroup->size() != 0) {
+				if (m_imageGroup->m_images[0].getMeshImage().getPointer() != NULL) {
+
+					//Get TMeshImage from currently selected image
+					ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					TMeshImage* m_mesh = currImg.getMeshImage().getPointer();
+
+					//Obtain vertices from the mesh and initialize an iterator
+					tcg::list<TTextureVertex> vertexHolder = m_mesh->meshes().at(0).getPointer()->vertices();
+					tcg::list<TTextureVertex>::iterator it = vertexHolder.begin();
+
+					//Obtain its transformation matrix
+					currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+					GLfloat* imgMatrix = currImg.getTransformMatrix();
+					
+					
+					//vector<float> xPositions, yPositions;
+
+					QVector2D meshVertex;
+					for (; it != vertexHolder.end(); it++) {
+						float x0 = it->P().x;
+						float y0 = it->P().y;
+
+						//Matrix multiplication to obtain changes in the coordinates
+						float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
+						float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
+						
+						//Scale all points like the resizing in paintGL()
+						float scaleAmt = 1.0 / 100;
+						finalX *= scaleAmt;
+						finalY *= scaleAmt;
+
+						////Store all vertices in a vector for reference and debugging
+						//xPositions.push_back(finalX);
+						//yPositions.push_back(finalY);
+
+						meshVertex.setX(finalX);
+						meshVertex.setY(finalY);
+
+						float distance = mouseClickPos.distanceToPoint(meshVertex);
+						if (distance < 0.04) {
+							return it.index();
+						}
+					}
+				}
+			}
+			return -1;
+		}
+
+
 		void SheetCanvas::updateSelectedVertex(int id) {
 			selectedVertex = id;
 			m_skeleton->setSelectedVertex(id);
 		}
+
+
+
+
 
 	}
 }

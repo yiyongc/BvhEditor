@@ -165,6 +165,7 @@ namespace cacani {
 			void highlightSelectedVertex();
 			void mouseToWorld(double x, double y);
 			bool clickCollision(QVector2D pointCenter);
+			int collisionMesh();
 			void updateSelectedVertex(int id);
 			void drawSkeleton();
 
