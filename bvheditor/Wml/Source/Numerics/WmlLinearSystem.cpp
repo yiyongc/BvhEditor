@@ -113,6 +113,7 @@ bool LinearSystem<Real>::Inverse (const GMatrix<Real>& rkA,
 
         if ( fMax == (Real)0.0 )
         {
+			return true;
             // matrix is not invertible
             delete[] aiColIndex;
             delete[] aiRowIndex;

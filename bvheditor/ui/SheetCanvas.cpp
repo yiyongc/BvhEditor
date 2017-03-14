@@ -33,6 +33,10 @@ namespace cacani {
 		const int     max_bvh_file_number = 30;
 		const float   figure_scale = 0.02f;
 
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		//---- Constructor and Destructor ----//
+		
 		SheetCanvas::SheetCanvas(cacani::controller::LayerController* layerController, QWidget *parent) :m_layerController(layerController), m_imageList(NULL)
 		{
 			xRot = 0;
@@ -50,6 +54,7 @@ namespace cacani {
 			m_timer_selected = new QTimer(this);
 			updateState(STATE_CAMERA);
 			m_skeleton = NULL;
+			m_deformedMesh = new TTextureMesh;
 
 			connect(m_timer_selected, SIGNAL(timeout()), this, SLOT(playCanvasSelected()));
 			connect(m_timer, SIGNAL(timeout()), this, SLOT(playCanvas()));
@@ -60,12 +65,13 @@ namespace cacani {
 			timer->start(10);
 		}
 
-
 		SheetCanvas::~SheetCanvas(){}
 
-		void SheetCanvas::setImageList(ImageListWidget* imageList) {
-			m_imageList = imageList;
-		}
+		//------------------------------------//
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		//---- Rendering/Drawing Functions ----//
 
 		void  SheetCanvas::RenderFigure(float scale)
 		{
@@ -108,7 +114,6 @@ namespace cacani {
 
 			}
 		}
-
 
 		void  SheetCanvas::RenderFigure(cacani::data::Joint * joint, const double * data, float scale, bool descendent)
 		{
@@ -200,8 +205,6 @@ namespace cacani {
 			glPopMatrix();
 		}
 
-
-
 		void  SheetCanvas::RenderBone(float x0, float y0, float z0, float x1, float y1, float z1)
 		{
 			GLdouble  dir_x = x1 - x0;
@@ -273,99 +276,279 @@ namespace cacani {
 			glPopMatrix();
 		}
 
-		void SheetCanvas::playCanvas()
-		{
-			int total_frames = 0;
-			cacani::data::Layer* curLayer;
-
-			//Obtain frames from the layers to play
-			if (!m_base->isTerminal()){
-				const cacani::data::LayerGroup* curLayerGroup;
-				for (int i = 0; i < m_base->memberCount(); i++)
+		void SheetCanvas::drawStage() {
+			float  size = 3.0f;
+			int  num_x = 5, num_z = 5;
+			double  ox, oz;
+			glBegin(GL_QUADS);
+			glNormal3d(0.0, 1.0, 0.0);
+			ox = -(num_x * size) / 2;
+			for (int x = 0; x<num_x; x++, ox += size)
+			{
+				oz = -(num_z * size) / 2;
+				for (int z = 0; z<num_z; z++, oz += size)
 				{
-					curLayerGroup = dynamic_cast<const cacani::data::LayerGroup*>(m_base->childAtIndex(i));
+					if (((x + z) % 2) == 0)
+						glColor4f(1.0, 1.0, 1.0, 0.9);
+					else
+						glColor4f(0.8, 0.8, 0.8, 0.9);
 
-					for (int j = 0; j < curLayerGroup->memberCount(); j++)
-					{
-						curLayer = curLayerGroup->childAtIndex(j);
-						if ((curLayer->checkIfVisible()) && (curLayer->GetNumFrame()>total_frames))
-						{
-							total_frames = curLayer->GetNumFrame();
-						}
-					}
+					glVertex3d(ox, 0.0, oz);
+					glVertex3d(ox, 0.0, oz + size);
+					glVertex3d(ox + size, 0.0, oz + size);
+					glVertex3d(ox + size, 0.0, oz);
 				}
 			}
-			else{
-				for (int j = 0; j < m_base->memberCount(); j++){
-					curLayer = m_base->childAtIndex(j);
-					if ((curLayer->checkIfVisible()) && (curLayer->GetNumFrame()>total_frames))
-					{
-						total_frames = curLayer->GetNumFrame();
-					}
-
-				}
-
-			}
-		
-			currentFrame++;
-			if (currentFrame >= total_frames) {
-				currentFrame = 0;
-				if (playOnce) {
-					playStatus = false;
-					animate();
-				}
-			}
-			m_frame = currentFrame;
-			m_layerController->layerSelector()->setActiveFrame(currentFrame);
-			m_layerController->updateCananiUI();
-			update();
-
-			//Update Sliders
-			m_layerController->jointEditorWidget()->initializeSliderGroup();
-
-			//Update Scroll Window
-			m_layerController->updateScroll();
+			glFinish();
+			glEnd();
 		}
 
-
-		void SheetCanvas::playCanvasSelected()
+		void SheetCanvas::drawMessage(int line_no, const char * message)
 		{
-			selectedFrameToPlay++;
+			int   i;
+			if (message == NULL)
+				return;
 
-			if (selectedFrameToPlay > selectedLastFrame) {
-				selectedFrameToPlay = selectedFirstFrame;
-				if (playOnce) {
-					playStatus = false;
-					//animateSelected();
-					m_timer_selected->stop();	
+			// 
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+			glLoadIdentity();
+			gluOrtho2D(0.0, win_width, win_height, 0.0);
+
+			// 
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			glLoadIdentity();
+
+			// 
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_LIGHTING);
+
+			//
+			glColor3f(1.0, 0.0, 0.0);
+			glRasterPos2i(8, 24 + 18 * line_no);
+			for (i = 0; message[i] != '\0'; i++)
+				glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, message[i]);
+
+			// ?
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_LIGHTING);
+			glMatrixMode(GL_PROJECTION);
+			glPopMatrix();
+			glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+		}
+
+		void SheetCanvas::RenderIKBone(){
+
+
+			// drawing is done here
+			m_IKArm->draw(m_IKBase.x(), m_IKBase.y(), m_IKBase.z());
+
+			//the target small white triangle
+			float c = 0.2;
+			Point3f a0 = m_goal + Vector3f(-c, 0, c);
+			Point3f a1 = m_goal + Vector3f(0, 0, -c);
+			Point3f a2 = m_goal + Vector3f(c, 0, c);
+			Vector3f n2(0, -1, 0);
+			glBegin(GL_TRIANGLES);
+			glNormal3f(n2[0], n2[1], n2[2]);
+			glVertex3f(a0[0], a0[1], a0[2]);
+			glVertex3f(a1[0], a1[1], a1[2]);
+			glVertex3f(a2[0], a2[1], a2[2]);
+			glEnd();
+
+			glFlush();
+			//glutSwapBuffers();					// swap buffers (we earlier set double buffer)
+
+		}
+
+		void SheetCanvas::renderImage(ImageFile img) {
+			glDisable(GL_LIGHTING);
+			glEnable(GL_BLEND);
+			glDisable(GL_CULL_FACE);
+			glEnable(GL_TEXTURE_2D);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glColor4f(1, 1, 1, 1);
+
+
+			glBindTexture(GL_TEXTURE_2D, img.m_imgTexture);
+			glFrontFace(GL_FRONT_AND_BACK);
+
+			glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 0.0f);	glVertex2f(0, 0);
+			glTexCoord2f(1.0f, 0.0f);	glVertex2f(img.getQImage().width(), 0);
+			glTexCoord2f(1.0f, 1.0f);	glVertex2f(img.getQImage().width(), img.getQImage().height());
+			glTexCoord2f(0.0f, 1.0f);	glVertex2f(0, img.getQImage().height());
+			glEnd();
+
+			glDisable(GL_TEXTURE_2D);
+			glDisable(GL_BLEND);
+		}
+
+		void SheetCanvas::renderMesh(ImageFile img) {
+			glEnable(GL_BLEND);
+			glEnable(GL_LINE_SMOOTH);
+			glDisable(GL_LIGHTING);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			// Retrieve mesh dpi
+			TPointD meshDpi;
+			img.getMeshImage()->getDpi(meshDpi.x, meshDpi.y);
+
+			//Resize mesh image
+			//glScaled(/*Stage::inch */ 0.148 /*/ meshDpi.x*/, /*Stage::inch /*/ 0.148/*/ meshDpi.y*/, 1.0);
+
+			glColor4f(0.0, 1.0, 0.0, 0.7); // Translucent green
+
+			if (meshInitialized) {
+				/*TMeshImage m1 = TMeshImage();
+				m1.meshes().push_back(m_deformedMesh);
+				tglDrawEdges(m1);*/
+				glLineWidth(2.0f);
+				glColor3f(0.0f, 0.0f, 0.0f);
+
+				unsigned int nTris = m_deformedMesh->facesCount();
+				for (unsigned int i = 0; i < nTris; ++i) {
+					Wml::Vector3f vVerts[3];
+					int v0 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(0)).vertex(0);
+					int v1 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(0)).vertex(1);
+					int v2 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(1)).vertex(1);
+					glBegin(GL_LINE_LOOP);
+					glVertex3f(m_deformedMesh->vertex(v0).P().x, m_deformedMesh->vertex(v0).P().y, 0);
+					glVertex3f(m_deformedMesh->vertex(v1).P().x, m_deformedMesh->vertex(v1).P().y, 0);
+					glVertex3f(m_deformedMesh->vertex(v2).P().x, m_deformedMesh->vertex(v2).P().y, 0);
+					glEnd();
 				}
 			}
-			m_frame = selectedFrameToPlay;
+			else
+				tglDrawEdges(*img.getMeshImage());
+
+
+			glDisable(GL_LINE_SMOOTH);
+			glDisable(GL_BLEND);
+		}
+
+		void SheetCanvas::drawVertex(SkeletonVertex* v) {
+			double x = v->getXPos();
+			double y = v->getYPos();
+			qglColor(Qt::blue);
+			glBegin(GL_POLYGON);
+			glVertex2d(x - vertexRadius, y - vertexRadius);
+			glVertex2d(x + vertexRadius, y - vertexRadius);
+			glVertex2d(x + vertexRadius, y + vertexRadius);
+			glVertex2d(x - vertexRadius, y + vertexRadius);
+			glEnd();
 			update();
-			m_layerController->layerSelector()->setActiveFrame(selectedFrameToPlay);
-			m_layerController->updateCananiUI();
-
-			//Update Sliders
-			m_layerController->jointEditorWidget()->initializeSliderGroup();
-
-			//Update Scroll Window
-			m_layerController->updateScroll();
 		}
 
+		void SheetCanvas::drawBone(SkeletonVertex* v1) {
+			int parentID = v1->getParent();
 
-		int SheetCanvas::getFramesFromCurrentLayer() {
-			return m_layerController->layerSelector()->activeLayer()->GetNumFrame();
-		}
+			//Check if parent from vertex exists
+			if (parentID != -1) {
+				SkeletonVertex* v2 = NULL;
+				v2 = m_skeleton->getVertex(parentID);
 
-		void SheetCanvas::capFrameRate(double fps) {
-			static double start = 0, diff, wait;
-			wait = 1 / fps;
-			diff = glfwGetTime() - start;
-			if (diff < wait) {
-				Sleep((wait - diff)*1000);
+				if (v2 == NULL)
+					return;
+
+				glDisable(GL_LIGHTING);
+				qglColor(QColor(250, 184, 70));
+				glLineWidth(2.0f);  // Yellow/Orange-ish line center
+
+				glBegin(GL_LINES);
+				glVertex2d(v1->getXPos(), v1->getYPos());
+				glVertex2d(v2->getXPos(), v2->getYPos());
+				glEnd();
+
+
+				qglColor(Qt::black);
+				glLineWidth(4.0f);  // Black border
+
+				glBegin(GL_LINES);
+				glVertex2d(v1->getXPos(), v1->getYPos());
+				glVertex2d(v2->getXPos(), v2->getYPos());
+				glEnd();
 			}
-			start = glfwGetTime();
 		}
+
+		void SheetCanvas::drawSkeleton() {
+			for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
+
+				drawVertex(m_skeleton->getVertices()[i]);
+				drawBone(m_skeleton->getVertices()[i]);
+			}
+
+			highlightSelectedVertex();
+		}
+
+		void SheetCanvas::highlightSelectedVertex() {
+			if (selectedVertex < 0)
+				return;
+
+			SkeletonVertex* vertexSelected;
+			for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
+				if (m_skeleton->getVertices().at(i)->getID() == selectedVertex)
+					vertexSelected = m_skeleton->getVertices().at(i);
+			}
+
+
+			float highlightBorder = vertexRadius + 0.005;
+
+
+			qglColor(Qt::red);
+			glLineWidth(2.0f);
+			glBegin(GL_LINE_LOOP);
+			glVertex2d(vertexSelected->getXPos() - highlightBorder, vertexSelected->getYPos() - highlightBorder);
+			glVertex2d(vertexSelected->getXPos() + highlightBorder, vertexSelected->getYPos() - highlightBorder);
+			glVertex2d(vertexSelected->getXPos() + highlightBorder, vertexSelected->getYPos() + highlightBorder);
+			glVertex2d(vertexSelected->getXPos() - highlightBorder, vertexSelected->getYPos() + highlightBorder);
+			glEnd();
+			update();
+		}
+
+		void SheetCanvas::drawHandles() {
+			//glLoadIdentity();
+			glColor3f(1.0f, 0.0f, 0.0f);
+			
+			std::set<unsigned int>::iterator cur(m_vSelected.begin()), end(m_vSelected.end());
+			while (cur != end) {
+				unsigned int nSelected = *cur++;
+
+				Wml::Vector3f vSelected;
+				float x0 = m_deformedMesh->vertex(nSelected).P().x;
+				float y0 = m_deformedMesh->vertex(nSelected).P().y;
+				
+				//Obtain its transformation matrix
+				ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+				currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+				GLfloat* imgMatrix = currImg.getTransformMatrix();
+
+
+				//Matrix multiplication to obtain changes in the coordinates
+				float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
+				float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
+
+				//Scale all points due to the resizing in paintGL()
+				float scaleAmt = 1.0 / 100;
+				finalX *= scaleAmt;
+				finalY *= scaleAmt;
+
+				glBegin(GL_QUADS);
+				glVertex2f(finalX - 0.03, finalY - 0.03);
+				glVertex2f(finalX + 0.03, finalY - 0.03);
+				glVertex2f(finalX + 0.03, finalY + 0.03);
+				glVertex2f(finalX - 0.03, finalY + 0.03);
+				glEnd();
+			}
+		}
+
+		//----------------------------//
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		//---- OpenGL Functions ----//
 
 		QSize SheetCanvas::minimumSizeHint() const
 		{
@@ -453,9 +636,10 @@ namespace cacani {
 			glClearColor(0.98, 0.98, 0.98, 0.0);
 		}
 
-
 		void SheetCanvas::paintGL()
 		{
+			if (meshInitialized)
+				UpdateDeformedMesh();
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			
@@ -556,7 +740,7 @@ namespace cacani {
 					drawMessage(1, message1);
 					sprintf(message2, "Selected Mesh Vertex ID: %d", selectedVertex);
 					drawMessage(2, message2);
-					
+					drawHandles();
 				}
 
 			}
@@ -580,7 +764,6 @@ namespace cacani {
 			
 		}
 
-
 		void SheetCanvas::setupProjection() {
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
@@ -596,69 +779,6 @@ namespace cacani {
 			}
 		}
 
-		void SheetCanvas::drawStage() {
-			float  size = 3.0f;
-			int  num_x = 5, num_z = 5;
-			double  ox, oz;
-			glBegin(GL_QUADS);
-			glNormal3d(0.0, 1.0, 0.0);
-			ox = -(num_x * size) / 2;
-			for (int x = 0; x<num_x; x++, ox += size)
-			{
-				oz = -(num_z * size) / 2;
-				for (int z = 0; z<num_z; z++, oz += size)
-				{
-					if (((x + z) % 2) == 0)
-						glColor4f(1.0, 1.0, 1.0, 0.9);
-					else
-						glColor4f(0.8, 0.8, 0.8, 0.9);
-
-					glVertex3d(ox, 0.0, oz);
-					glVertex3d(ox, 0.0, oz + size);
-					glVertex3d(ox + size, 0.0, oz + size);
-					glVertex3d(ox + size, 0.0, oz);
-				}
-			}
-			glFinish();
-			glEnd();
-		}
-
-		void SheetCanvas::drawMessage(int line_no, const char * message)
-		{
-			int   i;
-			if (message == NULL)
-				return;
-
-			// 
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			gluOrtho2D(0.0, win_width, win_height, 0.0);
-
-			// 
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();
-
-			// 
-			glDisable(GL_DEPTH_TEST);
-			glDisable(GL_LIGHTING);
-
-			//
-			glColor3f(1.0, 0.0, 0.0);
-			glRasterPos2i(8, 24 + 18 * line_no);
-			for (i = 0; message[i] != '\0'; i++)
-				glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, message[i]);
-
-			// ?
-			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_LIGHTING);
-			glMatrixMode(GL_PROJECTION);
-			glPopMatrix();
-			glMatrixMode(GL_MODELVIEW);
-			glPopMatrix();
-		}
-
 		void SheetCanvas::resizeGL(int width, int height)
 		{
 			glViewport(0, 0, width, height);
@@ -672,6 +792,105 @@ namespace cacani {
 			//glOrtho(-2, +2, -2, +2, 1.0, 15.0);
 			win_width = width;
 			win_height = height;
+		}
+
+		void SheetCanvas::createTextureForGL(ImageFile &image) {
+			QImage tex;
+			glEnable(GL_BLEND);
+			glEnable(GL_TEXTURE_2D);
+			glAlphaFunc(GL_GREATER, 0.1f);
+			glEnable(GL_ALPHA_TEST);
+
+			QImage fixedImage(image.getQImage().width(), image.getQImage().height(), QImage::Format_ARGB32);
+			QPainter painter(&fixedImage);
+			painter.setCompositionMode(QPainter::CompositionMode_Source);
+			painter.fillRect(fixedImage.rect(), Qt::transparent);
+			painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+			painter.drawImage(0, 0, image.getQImage());
+
+			painter.end();
+
+			tex = QGLWidget::convertToGLFormat(fixedImage);
+			glGenTextures(1, &image.m_imgTexture);
+			glBindTexture(GL_TEXTURE_2D, image.m_imgTexture);
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width(), tex.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.bits());
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glDisable(GL_ALPHA_TEST);
+			glDisable(GL_TEXTURE_2D);
+		}
+
+		//-------------------------//
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		//---- Mouse & Keyboard related Functions ----//
+
+		void SheetCanvas::keyPressEvent(QKeyEvent *event) {
+
+			if (canvasState == STATE_CAMERA) {
+				switch (event->key()) {
+				case (Qt::Key_Left) :
+					qDebug() << "Left Arrow Button Pressed.";
+					setYRotation(yRot + 100);
+					break;
+				case (Qt::Key_Right) :
+					setYRotation(yRot - 100);
+					break;
+				case (Qt::Key_Up) :
+					setXRotation(xRot + 100);
+					break;
+				case (Qt::Key_Down) :
+					setXRotation(xRot - 100);
+					break;
+				case (Qt::Key_W) :
+					zoomInCamera();
+					break;
+				case (Qt::Key_A) :
+					xTrans += 0.4f;
+					updateGL();
+					break;
+				case (Qt::Key_S) :
+					zoomOutCamera();
+					break;
+				case (Qt::Key_D) :
+					xTrans -= 0.4f;
+					updateGL();
+					break;
+				}
+			}
+			else if (canvasState == STATE_BUILDER) {
+				if (event->key() == Qt::Key_Delete) {
+					drawKey = true;
+
+					if (m_skeleton != NULL) {
+						if (m_skeleton->getVertexCount() != 0) {
+							//Get vertex to delete and parentId
+							int idToDelete = selectedVertex;
+							int vertexParent = m_skeleton->getVertex(selectedVertex)->getParent();
+
+							//Update new selected vertex to parent and reconnect children to parent
+							if (vertexParent != -1) {
+								updateSelectedVertex(vertexParent);
+								m_skeleton->removeVertex(idToDelete);
+							}
+						}
+					}
+
+				}
+				else
+					drawKey = false;
+			}
+
+			if (event->key() == Qt::Key_Space) {
+				int newState = canvasState + 1;
+				if (newState > 2)
+					newState = 1;
+				updateState(newState);
+				updateGL();
+			}
+
 		}
 
 		void SheetCanvas::mousePressEvent(QMouseEvent *event)
@@ -722,6 +941,29 @@ namespace cacani {
 				//Get position of mouse click
 				mouseToWorld(lastPos.x(), lastPos.y());
 				selectedVertex = collisionMesh();
+				if (event->buttons() & Qt::MiddleButton) {
+					InitializeDeformedMesh();
+					meshInitialized = true;
+				}
+				if (event->buttons() & Qt::RightButton) {
+					if (selectedVertex != -1) {
+						if (m_vSelected.find(selectedVertex) == m_vSelected.end())
+							m_vSelected.insert(selectedVertex);
+						else {
+							m_vSelected.erase(selectedVertex);
+							m_deformer.removeHandle(selectedVertex);
+
+							//Restore position
+							Wml::Vector3f vVertex;
+							TTextureMesh* m_mesh = m_imageGroup->m_images.at(m_imageList->currentIndex().row()).getMeshImage().getPointer()->meshes().at(0).getPointer();
+							m_deformedMesh->vertex(selectedVertex).P().x = m_mesh->vertex(selectedVertex).P().x;
+							m_deformedMesh->vertex(selectedVertex).P().y = m_mesh->vertex(selectedVertex).P().y;
+						}
+
+						InvalidateConstraints();
+
+					}
+				}
 			}
 
 			if (event->buttons() & Qt::MidButton && canvasState == STATE_CAMERA) {
@@ -780,6 +1022,15 @@ namespace cacani {
 					}
 				}
 			}
+			else if (event->buttons() & Qt::LeftButton && canvasState == STATE_MAPPING) {
+				if (selectedVertex != -1) {
+					//Get position of mouse in world coordinates
+					mouseToWorld(lastPos.x(), lastPos.y());
+					m_deformedMesh->vertex(selectedVertex).P().x = objX;
+					m_deformedMesh->vertex(selectedVertex).P().y = objY;
+					InvalidateConstraints();
+				}
+			}
 
 		}
 
@@ -816,7 +1067,6 @@ namespace cacani {
 				}
 			}
 		}
-
 
 		void SheetCanvas::wheelEvent(QWheelEvent *event) {
 			if (canvasState == STATE_CAMERA) {
@@ -859,6 +1109,110 @@ namespace cacani {
 			}
 		}
 
+		void SheetCanvas::mouseToWorld(double x, double y) {
+			//Use of QT to determine x, y position on the widget
+			x = this->mapFromGlobal(QCursor::pos()).x();
+			y = this->mapFromGlobal(QCursor::pos()).y();
+
+			//Setting up of view, model, projection matrices
+			GLint viewport[4];
+			glGetIntegerv(GL_VIEWPORT, viewport);
+
+			GLdouble modelview[16];
+			glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+
+			GLdouble projection[16];
+			glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+			GLfloat winX, winY, winZ;
+
+
+			winX = (float)x;
+			//Convert normal coordinate to OpenGL-format coordinate
+			winY = (float)viewport[3] - y;
+
+			//Obtain depth
+			glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+			//Obtain values for world coordinates
+			gluUnProject(winX, winY, winZ, modelview, projection, viewport, &objX, &objY, &objZ);
+		}
+
+		bool SheetCanvas::clickCollision(QVector2D pointCenter) {
+			QVector2D mouseClickPos(objX, objY);
+
+			float distance = pointCenter.distanceToPoint(mouseClickPos);
+
+			if (distance <= vertexRadius * 2)
+				return true;
+			else
+				return false;
+		}
+
+		int SheetCanvas::collisionMesh() {
+			//Get mouse click position
+			QVector2D mouseClickPos(objX, objY);
+
+			//Obtain mesh
+			if (m_imageGroup->size() != 0) {
+				if (m_imageGroup->m_images[0].getMeshImage().getPointer() != NULL) {
+
+					//Get TMeshImage from currently selected image
+					ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					TMeshImage* m_mesh = currImg.getMeshImage().getPointer();
+
+					//Obtain vertices from the mesh and initialize an iterator
+					tcg::list<TTextureVertex> vertexHolder = m_mesh->meshes().at(0).getPointer()->vertices();
+					tcg::list<TTextureVertex>::iterator it = vertexHolder.begin();
+
+					//Obtain its transformation matrix
+					currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+					GLfloat* imgMatrix = currImg.getTransformMatrix();
+
+
+					//vector<float> xPositions, yPositions;
+
+					QVector2D meshVertex;
+					for (; it != vertexHolder.end(); it++) {
+						float x0 = it->P().x;
+						float y0 = it->P().y;
+
+						//Matrix multiplication to obtain changes in the coordinates
+						float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
+						float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
+
+						//Scale all points like the resizing in paintGL()
+						float scaleAmt = 1.0 / 100;
+						finalX *= scaleAmt;
+						finalY *= scaleAmt;
+
+						////Store all vertices in a vector for reference and debugging
+						//xPositions.push_back(finalX);
+						//yPositions.push_back(finalY);
+
+						meshVertex.setX(finalX);
+						meshVertex.setY(finalY);
+
+						float distance = mouseClickPos.distanceToPoint(meshVertex);
+						if (distance < 0.04) {
+							return it.index();
+						}
+					}
+				}
+			}
+			return -1;
+		}
+
+		void SheetCanvas::updateSelectedVertex(int id) {
+			selectedVertex = id;
+			m_skeleton->setSelectedVertex(id);
+		}
+
+		//--------------------------------//
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		//---- Animation, Interface, BVH File Functionality ----//
 
 		void SheetCanvas::SetupIKArm(Joint* endJoint, QString base_name){
 
@@ -963,30 +1317,6 @@ namespace cacani {
 			m_IKArm = new Arm(segs, Vector3f(0, 0, 0));
 		}
 
-		void SheetCanvas::RenderIKBone(){
-
-
-			// drawing is done here
-			m_IKArm->draw(m_IKBase.x(), m_IKBase.y(), m_IKBase.z());
-
-			//the target small white triangle
-			float c = 0.2;
-			Point3f a0 = m_goal + Vector3f(-c, 0, c);
-			Point3f a1 = m_goal + Vector3f(0, 0, -c);
-			Point3f a2 = m_goal + Vector3f(c, 0, c);
-			Vector3f n2(0, -1, 0);
-			glBegin(GL_TRIANGLES);
-			glNormal3f(n2[0], n2[1], n2[2]);
-			glVertex3f(a0[0], a0[1], a0[2]);
-			glVertex3f(a1[0], a1[1], a1[2]);
-			glVertex3f(a2[0], a2[1], a2[2]);
-			glEnd();
-
-			glFlush();
-			//glutSwapBuffers();					// swap buffers (we earlier set double buffer)
-
-		}
-
 		//inverse kinematics and openGL uses different coordinate systems
 		//inverse kinematics: z+ up, x+ right, y+ from user to screen
 		//openGL: y+ up, x+ right, z+ from screen to user
@@ -999,6 +1329,9 @@ namespace cacani {
 			m_IKArm->solve(m_goal, 100);
 		}
 
+		void SheetCanvas::setImageList(ImageListWidget* imageList) {
+			m_imageList = imageList;
+		}
 
 		///xiaocai_playAnimation added
 		void SheetCanvas::animate()
@@ -1043,7 +1376,6 @@ namespace cacani {
 			m_layerController->updateCananiUI();
 		}
 
-
 		bool SheetCanvas::getPlayStatus() {
 			return playStatus;
 		}
@@ -1074,147 +1406,97 @@ namespace cacani {
 			viewMesh = !viewMesh;
 		}
 
-		void SheetCanvas::keyPressEvent(QKeyEvent *event) {
-			
-			if (canvasState == STATE_CAMERA) {
-				switch (event->key()) {
-				case (Qt::Key_Left) :
-					qDebug() << "Left Arrow Button Pressed.";
-					setYRotation(yRot + 100);
-					break;
-				case (Qt::Key_Right) :
-					setYRotation(yRot - 100);
-					break;
-				case (Qt::Key_Up) :
-					setXRotation(xRot + 100);
-					break;
-				case (Qt::Key_Down) :
-					setXRotation(xRot - 100);
-					break;
-				case (Qt::Key_W) :
-					zoomInCamera();
-					break;
-				case (Qt::Key_A) :
-					xTrans += 0.4f;
-					updateGL();
-					break;
-				case (Qt::Key_S) :
-					zoomOutCamera();
-					break;
-				case (Qt::Key_D) :
-					xTrans -= 0.4f;
-					updateGL();
-					break;
+		void SheetCanvas::playCanvas()
+		{
+			int total_frames = 0;
+			cacani::data::Layer* curLayer;
+
+			//Obtain frames from the layers to play
+			if (!m_base->isTerminal()){
+				const cacani::data::LayerGroup* curLayerGroup;
+				for (int i = 0; i < m_base->memberCount(); i++)
+				{
+					curLayerGroup = dynamic_cast<const cacani::data::LayerGroup*>(m_base->childAtIndex(i));
+
+					for (int j = 0; j < curLayerGroup->memberCount(); j++)
+					{
+						curLayer = curLayerGroup->childAtIndex(j);
+						if ((curLayer->checkIfVisible()) && (curLayer->GetNumFrame()>total_frames))
+						{
+							total_frames = curLayer->GetNumFrame();
+						}
+					}
 				}
 			}
-			else if (canvasState == STATE_BUILDER) {
-				if (event->key() == Qt::Key_Delete) {
-					drawKey = true;
-
-					if (m_skeleton != NULL) {
-						if (m_skeleton->getVertexCount() != 0) {
-							//Get vertex to delete and parentId
-							int idToDelete = selectedVertex;
-							int vertexParent = m_skeleton->getVertex(selectedVertex)->getParent();
-
-							//Update new selected vertex to parent and reconnect children to parent
-							if (vertexParent != -1) {
-								updateSelectedVertex(vertexParent);
-								m_skeleton->removeVertex(idToDelete);
-							}
-						}
+			else{
+				for (int j = 0; j < m_base->memberCount(); j++){
+					curLayer = m_base->childAtIndex(j);
+					if ((curLayer->checkIfVisible()) && (curLayer->GetNumFrame()>total_frames))
+					{
+						total_frames = curLayer->GetNumFrame();
 					}
 
 				}
-				else
-					drawKey = false;
+
 			}
 
-			if (event->key() == Qt::Key_Space) {
-				int newState = canvasState + 1;
-				if (newState > 2)
-					newState = 1;
-				updateState(newState);
-				updateGL();
+			currentFrame++;
+			if (currentFrame >= total_frames) {
+				currentFrame = 0;
+				if (playOnce) {
+					playStatus = false;
+					animate();
+				}
 			}
+			m_frame = currentFrame;
+			m_layerController->layerSelector()->setActiveFrame(currentFrame);
+			m_layerController->updateCananiUI();
+			update();
 
+			//Update Sliders
+			m_layerController->jointEditorWidget()->initializeSliderGroup();
+
+			//Update Scroll Window
+			m_layerController->updateScroll();
 		}
 
+		void SheetCanvas::playCanvasSelected()
+		{
+			selectedFrameToPlay++;
 
-		void SheetCanvas::renderImage(ImageFile img) {
-			glDisable(GL_LIGHTING);
-			glEnable(GL_BLEND);
-			glDisable(GL_CULL_FACE);
-			glEnable(GL_TEXTURE_2D);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glColor4f(1, 1, 1, 1);
+			if (selectedFrameToPlay > selectedLastFrame) {
+				selectedFrameToPlay = selectedFirstFrame;
+				if (playOnce) {
+					playStatus = false;
+					//animateSelected();
+					m_timer_selected->stop();
+				}
+			}
+			m_frame = selectedFrameToPlay;
+			update();
+			m_layerController->layerSelector()->setActiveFrame(selectedFrameToPlay);
+			m_layerController->updateCananiUI();
 
-			
-			glBindTexture(GL_TEXTURE_2D, img.m_imgTexture);
-			glFrontFace(GL_FRONT_AND_BACK);
+			//Update Sliders
+			m_layerController->jointEditorWidget()->initializeSliderGroup();
 
-			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f);	glVertex2f(0, 0);
-			glTexCoord2f(1.0f, 0.0f);	glVertex2f(img.getQImage().width(), 0);
-			glTexCoord2f(1.0f, 1.0f);	glVertex2f(img.getQImage().width(), img.getQImage().height());
-			glTexCoord2f(0.0f, 1.0f);	glVertex2f(0, img.getQImage().height());
-			glEnd();
-
-			glDisable(GL_TEXTURE_2D);	
-			glDisable(GL_BLEND);
+			//Update Scroll Window
+			m_layerController->updateScroll();
 		}
 
-		void SheetCanvas::renderMesh(ImageFile img) {
-			glEnable(GL_BLEND);
-			glEnable(GL_LINE_SMOOTH);
-			glDisable(GL_LIGHTING);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			// Retrieve mesh dpi
-			TPointD meshDpi;
-			img.getMeshImage()->getDpi(meshDpi.x, meshDpi.y);
-
-			//Resize mesh image
-			//glScaled(/*Stage::inch */ 0.148 /*/ meshDpi.x*/, /*Stage::inch /*/ 0.148/*/ meshDpi.y*/, 1.0);
-
-			glColor4f(0.0, 1.0, 0.0, 0.7); // Translucent green
-
-			tglDrawEdges(*img.getMeshImage());
-
-
-			glDisable(GL_LINE_SMOOTH);
-			glDisable(GL_BLEND);
+		int SheetCanvas::getFramesFromCurrentLayer() {
+			return m_layerController->layerSelector()->activeLayer()->GetNumFrame();
 		}
 
-
-		void SheetCanvas::createTextureForGL(ImageFile &image) {
-			QImage tex;
-			glEnable(GL_BLEND);
-			glEnable(GL_TEXTURE_2D);
-			glAlphaFunc(GL_GREATER, 0.1f);
-			glEnable(GL_ALPHA_TEST);
-
-			QImage fixedImage(image.getQImage().width(), image.getQImage().height(), QImage::Format_ARGB32);
-			QPainter painter(&fixedImage);
-			painter.setCompositionMode(QPainter::CompositionMode_Source);
-			painter.fillRect(fixedImage.rect(), Qt::transparent);
-			painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-			painter.drawImage(0, 0, image.getQImage());
-
-			painter.end();
-
-			tex = QGLWidget::convertToGLFormat(fixedImage);
-			glGenTextures(1, &image.m_imgTexture);
-			glBindTexture(GL_TEXTURE_2D, image.m_imgTexture);
-
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width(), tex.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.bits());
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glDisable(GL_ALPHA_TEST);
-			glDisable(GL_TEXTURE_2D);
+		void SheetCanvas::capFrameRate(double fps) {
+			static double start = 0, diff, wait;
+			wait = 1 / fps;
+			diff = glfwGetTime() - start;
+			if (diff < wait) {
+				Sleep((wait - diff) * 1000);
+			}
+			start = glfwGetTime();
 		}
-
-
 
 		void SheetCanvas::updateState(int state) {
 			int oldState = canvasState;
@@ -1269,193 +1551,77 @@ namespace cacani {
 			}
 		}
 
+		//-------------------------------------//
 
-		void SheetCanvas::drawVertex(SkeletonVertex* v) {
-			double x = v->getXPos();
-			double y = v->getYPos();
-			qglColor(Qt::blue);
-			glBegin(GL_POLYGON);
-			glVertex2d(x - vertexRadius, y - vertexRadius);
-			glVertex2d(x + vertexRadius, y - vertexRadius);
-			glVertex2d(x + vertexRadius, y + vertexRadius);
-			glVertex2d(x - vertexRadius, y + vertexRadius);
-			glEnd();
-			update();
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		//---- Mesh Deforming Functionality ----//
+
+		void SheetCanvas::InvalidateConstraints()
+		{
+			m_bConstraintsValid = false;
 		}
 
-		void SheetCanvas::drawBone(SkeletonVertex* v1) {
-			int parentID = v1->getParent();
-
-			//Check if parent from vertex exists
-			if (parentID != -1) {
-				SkeletonVertex* v2 = NULL;
-				v2 = m_skeleton->getVertex(parentID);
-
-				if (v2 == NULL)
-					return;
-
-				glDisable(GL_LIGHTING);
-				qglColor(QColor(250, 184, 70));
-				glLineWidth(2.0f);  // Yellow/Orange-ish line center
-
-				glBegin(GL_LINES);
-				glVertex2d(v1->getXPos(), v1->getYPos());
-				glVertex2d(v2->getXPos(), v2->getYPos());
-				glEnd();
-
-
-				qglColor(Qt::black);
-				glLineWidth(4.0f);  // Black border
-
-				glBegin(GL_LINES);
-				glVertex2d(v1->getXPos(), v1->getYPos());
-				glVertex2d(v2->getXPos(), v2->getYPos());
-				glEnd();
-			}
-		}
-
-		void SheetCanvas::drawSkeleton() {
-			for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
-
-				drawVertex(m_skeleton->getVertices()[i]);
-				drawBone(m_skeleton->getVertices()[i]);
-			}
-
-			highlightSelectedVertex();
-		}
-
-
-		void SheetCanvas::highlightSelectedVertex() {
-			if (selectedVertex < 0)
+		void SheetCanvas::ValidateConstraints()
+		{
+			if (m_bConstraintsValid)
 				return;
 
-			SkeletonVertex* vertexSelected;
-			for (int i = 0; i < m_skeleton->getVertexCount(); i++) {
-				if (m_skeleton->getVertices().at(i)->getID() == selectedVertex)
-					vertexSelected = m_skeleton->getVertices().at(i);
+			size_t nConstraints = m_vSelected.size();
+			std::set<unsigned int>::iterator cur(m_vSelected.begin()), end(m_vSelected.end());
+			while (cur != end) {
+				unsigned int nVertex = *cur++;
+				Wml::Vector3f vVertex;
+				vVertex.X() = m_deformedMesh->vertex(nVertex).P().x;
+				vVertex.Y() = m_deformedMesh->vertex(nVertex).P().y;
+				vVertex.Z() = 0;
+				//m_deformedMesh.GetVertex(nVertex, vVertex);
+				m_deformer.SetDeformedHandle(nVertex, Wml::Vector2f(vVertex.X(), vVertex.Y()));
 			}
 
+			m_deformer.ForceValidation();
 
-			float highlightBorder = vertexRadius + 0.005;
-
-
-			qglColor(Qt::red);
-			glLineWidth(2.0f);
-			glBegin(GL_LINE_LOOP);
-			glVertex2d(vertexSelected->getXPos() - highlightBorder, vertexSelected->getYPos() - highlightBorder);
-			glVertex2d(vertexSelected->getXPos() + highlightBorder, vertexSelected->getYPos() - highlightBorder);
-			glVertex2d(vertexSelected->getXPos() + highlightBorder, vertexSelected->getYPos() + highlightBorder);
-			glVertex2d(vertexSelected->getXPos() - highlightBorder, vertexSelected->getYPos() + highlightBorder);
-			glEnd();
-			update();
+			m_bConstraintsValid = true;
 		}
 
+		void SheetCanvas::InitializeDeformedMesh() {
+			m_deformedMesh->clear();
 
-		void SheetCanvas::mouseToWorld(double x, double y) {
-			//Use of QT to determine x, y position on the widget
-			x = this->mapFromGlobal(QCursor::pos()).x();
-			y = this->mapFromGlobal(QCursor::pos()).y();
-
-			//Setting up of view, model, projection matrices
-			GLint viewport[4];
-			glGetIntegerv(GL_VIEWPORT, viewport);
-
-			GLdouble modelview[16];
-			glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-
-			GLdouble projection[16];
-			glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-			GLfloat winX, winY, winZ;
-
-
-			winX = (float)x;
-			//Convert normal coordinate to OpenGL-format coordinate
-			winY = (float)viewport[3] - y;
-
-			//Obtain depth
-			glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
-
-			//Obtain values for world coordinates
-			gluUnProject(winX, winY, winZ, modelview, projection, viewport, &objX, &objY, &objZ);
-		}
-
-
-		bool SheetCanvas::clickCollision(QVector2D pointCenter) {
-			QVector2D mouseClickPos(objX, objY);
-
-			float distance = pointCenter.distanceToPoint(mouseClickPos);
-
-			if (distance <= vertexRadius * 2)
-				return true;
-			else
-				return false;
-		}
-
-
-		int SheetCanvas::collisionMesh() {
-			//Get mouse click position
-			QVector2D mouseClickPos(objX, objY);
+			TTextureMesh* m_mesh = m_imageGroup->m_images.at(m_imageList->currentIndex().row()).getMeshImage().getPointer()->meshes().at(0).getPointer();
 			
-			//Obtain mesh
-			if (m_imageGroup->size() != 0) {
-				if (m_imageGroup->m_images[0].getMeshImage().getPointer() != NULL) {
-
-					//Get TMeshImage from currently selected image
-					ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-					TMeshImage* m_mesh = currImg.getMeshImage().getPointer();
-
-					//Obtain vertices from the mesh and initialize an iterator
-					tcg::list<TTextureVertex> vertexHolder = m_mesh->meshes().at(0).getPointer()->vertices();
-					tcg::list<TTextureVertex>::iterator it = vertexHolder.begin();
-
-					//Obtain its transformation matrix
-					currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
-					GLfloat* imgMatrix = currImg.getTransformMatrix();
-					
-					
-					//vector<float> xPositions, yPositions;
-
-					QVector2D meshVertex;
-					for (; it != vertexHolder.end(); it++) {
-						float x0 = it->P().x;
-						float y0 = it->P().y;
-
-						//Matrix multiplication to obtain changes in the coordinates
-						float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
-						float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
-						
-						//Scale all points like the resizing in paintGL()
-						float scaleAmt = 1.0 / 100;
-						finalX *= scaleAmt;
-						finalY *= scaleAmt;
-
-						////Store all vertices in a vector for reference and debugging
-						//xPositions.push_back(finalX);
-						//yPositions.push_back(finalY);
-
-						meshVertex.setX(finalX);
-						meshVertex.setY(finalY);
-
-						float distance = mouseClickPos.distanceToPoint(meshVertex);
-						if (distance < 0.04) {
-							return it.index();
-						}
-					}
-				}
+			unsigned int nVerts = m_mesh->verticesCount();
+			for (unsigned int i = 0; i < nVerts; ++i) {
+				TTextureVertex vVertex;
+				vVertex.P().x = m_mesh->vertex(i).P().x;
+				vVertex.P().y = m_mesh->vertex(i).P().y;
+				m_deformedMesh->addVertex(vVertex);
 			}
-			return -1;
+
+			unsigned int nTris = m_mesh->facesCount();
+			for (unsigned int i = 0; i < nTris; ++i) {
+				unsigned int nTriangle[3];
+				int v0, v1, v2;
+				v0 = m_mesh->edge(m_mesh->face(i).edge(0)).vertex(0);
+				v1 = m_mesh->edge(m_mesh->face(i).edge(0)).vertex(1);
+				v2 = m_mesh->edge(m_mesh->face(i).edge(1)).vertex(1);
+				m_deformedMesh->addFace(v0, v1, v2);
+			}
+
+			m_deformer.initializeFromMesh(m_mesh);
+			InvalidateConstraints();
 		}
 
 
-		void SheetCanvas::updateSelectedVertex(int id) {
-			selectedVertex = id;
-			m_skeleton->setSelectedVertex(id);
+		void SheetCanvas::UpdateDeformedMesh()
+		{
+			ValidateConstraints();
+			m_deformer.UpdateDeformedMesh(m_deformedMesh, true);
 		}
 
 
 
+		//--------------------------------------//
 
-
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 	}
 }

@@ -17,6 +17,7 @@
 #include "../ui/ImageListWidget.h"
 #include "../OpenToonz/meshutils.h"
 #include "Skeleton.h"
+#include "../MeshDeformer/RigidMeshDeformer2D.h"
 
 //using namespace cacani::controller;
 
@@ -169,6 +170,19 @@ namespace cacani {
 			void updateSelectedVertex(int id);
 			void drawSkeleton();
 
+			// Mesh deformer related
+			bool m_bConstraintsValid;
+			std::set<unsigned int> m_vSelected;
+			unsigned int m_nSelected;
+			TTextureMesh* m_deformedMesh;
+			RigidMeshDeformer2D m_deformer;
+			bool meshInitialized = false;
+
+			void InvalidateConstraints();
+			void ValidateConstraints();
+			void InitializeDeformedMesh();
+			void UpdateDeformedMesh();
+			void drawHandles();
 
 		public:
 			void animate();

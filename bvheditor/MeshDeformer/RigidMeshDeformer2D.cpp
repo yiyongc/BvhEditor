@@ -122,7 +122,7 @@ void RigidMeshDeformer2D::initializeFromMesh(TTextureMesh* m_mesh) {
 }
 
 
-void RigidMeshDeformer2D::updateDeformedMesh(TTextureMesh* m_mesh, bool bRigid) {
+void RigidMeshDeformer2D::UpdateDeformedMesh(TTextureMesh* m_mesh, bool bRigid) {
 	ValidateDeformedMesh(bRigid);
 
 	std::vector<Vertex> & vVerts = (m_vConstraints.size() > 1) ? m_vDeformedVerts : m_vInitialVerts;

@@ -32,9 +32,9 @@ static void MaxProduct (int iQuantity, vector<Vector2<Real> >& rkA, Real& rfX,
     // contributes to the convex hull of the constraints and the search for
     // the maximum terminates before or at this line.
     int i, iYMin = -1;
-#ifdef _DEBUG
+//#ifdef _DEBUG
     int iXMin = -1;
-#endif
+//#endif
     Real fAXMax = (Real)0.0, fAYMax = (Real)0.0;  // A[i] >= (0,0) by design
     for (i = 0; i < iQuantity; i++)
     {

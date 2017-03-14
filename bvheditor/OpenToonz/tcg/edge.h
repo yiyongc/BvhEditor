@@ -77,7 +77,7 @@ public:
 
 	void addFace(int f)
 	{
-		assert(facesCount() < 2);
+		//assert(facesCount() < 2);
 		m_f[facesCount()] = f;
 	}
 	void setFace(int i, int f) { assert(i < facesCount()), m_f[i] = f; }

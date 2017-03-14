@@ -17,7 +17,7 @@ public:
 	RigidMeshDeformer2D();
 	~RigidMeshDeformer2D();
 	
-	void forceValidation() { ValidateSetup(); }
+	void ForceValidation() { ValidateSetup(); }
 	
 
 	//---- Interface related ----//
@@ -28,7 +28,7 @@ public:
 
 	//---- Mesh handling functions ----//
 	void initializeFromMesh(TTextureMesh* m_mesh);
-	void updateDeformedMesh(TTextureMesh* m_mesh, bool bRigid);
+	void UpdateDeformedMesh(TTextureMesh* m_mesh, bool bRigid);
 
 	const Wml::Vector2f * GetTriangleVerts(unsigned int nTriangle) { return m_vTriangles[nTriangle].vScaled; }
 
