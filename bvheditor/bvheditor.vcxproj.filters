@@ -60,6 +60,9 @@
     <Filter Include="OpenToonz\tcg\hpp">
       <UniqueIdentifier>{037ca0a3-9954-4ee3-98b0-38a40268c8b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MeshDeformer">
+      <UniqueIdentifier>{21d1f5f2-1c2d-4b03-85ed-e666b6d9915a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -364,6 +367,18 @@
     </ClCompile>
     <ClCompile Include="SkeletonVertex.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshDeformer\LinearAlgebra.cpp">
+      <Filter>MeshDeformer</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshDeformer\WmlExtTriangleUtils.cpp">
+      <Filter>MeshDeformer</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshDeformer\WmlLinearSystemExt.cpp">
+      <Filter>MeshDeformer</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshDeformer\RigidMeshDeformer2D.cpp">
+      <Filter>MeshDeformer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -806,6 +821,18 @@
     </ClInclude>
     <ClInclude Include="SkeletonVertex.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshDeformer\LinearAlgebra.h">
+      <Filter>MeshDeformer</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshDeformer\WmlExtTriangleUtils.h">
+      <Filter>MeshDeformer</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshDeformer\WmlLinearSystemExt.h">
+      <Filter>MeshDeformer</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshDeformer\RigidMeshDeformer2D.h">
+      <Filter>MeshDeformer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

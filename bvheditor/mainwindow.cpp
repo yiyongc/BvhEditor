@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 //#include "qdebug.h"
 
-
 MainWindow::MainWindow(QApplication* app, QWidget *parent)
 	: QMainWindow(parent),
 	m_root(new LayerGroup(false)),
