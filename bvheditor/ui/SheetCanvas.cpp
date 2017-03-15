@@ -402,24 +402,24 @@ namespace cacani {
 			glColor4f(0.0, 1.0, 0.0, 0.7); // Translucent green
 
 			if (meshInitialized) {
-				/*TMeshImage m1 = TMeshImage();
-				m1.meshes().push_back(m_deformedMesh);
-				tglDrawEdges(m1);*/
-				glLineWidth(2.0f);
-				glColor3f(0.0f, 0.0f, 0.0f);
+				///*TMeshImage m1 = TMeshImage();
+				//m1.meshes().push_back(m_deformedMesh);
+				//tglDrawEdges(m1);*/
+				//glLineWidth(2.0f);
+				//glColor3f(0.0f, 0.0f, 0.0f);
 
-				unsigned int nTris = m_deformedMesh->facesCount();
-				for (unsigned int i = 0; i < nTris; ++i) {
-					Wml::Vector3f vVerts[3];
-					int v0 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(0)).vertex(0);
-					int v1 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(0)).vertex(1);
-					int v2 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(1)).vertex(1);
-					glBegin(GL_LINE_LOOP);
-					glVertex3f(m_deformedMesh->vertex(v0).P().x, m_deformedMesh->vertex(v0).P().y, 0);
-					glVertex3f(m_deformedMesh->vertex(v1).P().x, m_deformedMesh->vertex(v1).P().y, 0);
-					glVertex3f(m_deformedMesh->vertex(v2).P().x, m_deformedMesh->vertex(v2).P().y, 0);
-					glEnd();
-				}
+				//unsigned int nTris = m_deformedMesh->facesCount();
+				//for (unsigned int i = 0; i < nTris; ++i) {
+				//	Wml::Vector3f vVerts[3];
+				//	int v0 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(0)).vertex(0);
+				//	int v1 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(0)).vertex(1);
+				//	int v2 = m_deformedMesh->edge(m_deformedMesh->face(i).edge(1)).vertex(1);
+				//	glBegin(GL_LINE_LOOP);
+				//	glVertex3f(m_deformedMesh->vertex(v0).P().x, m_deformedMesh->vertex(v0).P().y, 0);
+				//	glVertex3f(m_deformedMesh->vertex(v1).P().x, m_deformedMesh->vertex(v1).P().y, 0);
+				//	glVertex3f(m_deformedMesh->vertex(v2).P().x, m_deformedMesh->vertex(v2).P().y, 0);
+				//	glEnd();
+				//}
 			}
 			else
 				tglDrawEdges(*img.getMeshImage());
@@ -427,6 +427,72 @@ namespace cacani {
 
 			glDisable(GL_LINE_SMOOTH);
 			glDisable(GL_BLEND);
+		}
+
+		void SheetCanvas::renderDeformedMesh(TTextureMesh* m1) {
+
+			glEnable(GL_BLEND);
+			glEnable(GL_LINE_SMOOTH);
+			//glDisable(GL_LIGHTING);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glDisable(GL_LIGHTING);
+			glDisable(GL_CULL_FACE);
+
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glLineWidth(1.5f);
+			//glColor3f(0.0f, 0.0f, 1.0f);
+
+			QVector2D imageWidthRange = obtainWidthRange(m1);
+			QVector2D imageHeightRange = obtainHeightRange(m1);
+			ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+
+
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, currImg.m_imgTexture);
+
+			unsigned int nTris = m1->facesCount();
+			for (unsigned int i = 0; i < nTris; ++i) {
+				Wml::Vector3f vVerts[3];
+				int v0 = m1->edge(m1->face(i).edge(0)).vertex(0);
+				int v1 = m1->edge(m1->face(i).edge(0)).vertex(1);
+				int v2 = m1->edge(m1->face(i).edge(1)).vertex(1);
+				
+				//For v0
+				QVector2D v0coord(m1->vertex(v0).P().x, m1->vertex(v0).P().y);
+				QVector2D v0tex = convertToUV(v0coord, imageHeightRange, imageWidthRange);
+
+				//For v1
+				QVector2D v1coord(m1->vertex(v1).P().x, m1->vertex(v1).P().y);
+				QVector2D v1tex = convertToUV(v1coord, imageHeightRange, imageWidthRange);
+
+				//For v2
+				QVector2D v2coord(m1->vertex(v2).P().x, m1->vertex(v2).P().y);
+				QVector2D v2tex = convertToUV(v2coord, imageHeightRange, imageWidthRange);
+
+
+				glBegin(GL_TRIANGLES);
+				glTexCoord2f(v0tex.x(), v0tex.y());	glVertex2f(v0coord.x(), v0coord.y());
+				glTexCoord2f(v1tex.x(), v1tex.y());	glVertex2f(v1coord.x(), v1coord.y());
+				glTexCoord2f(v2tex.x(), v2tex.y());	glVertex2f(v2coord.x(), v2coord.y());
+				glEnd();
+
+
+
+				//glBegin(GL_TRIANGLES);
+
+				//	glVertex3f(m1->vertex(v0).P().x, m1->vertex(v0).P().y, 0);
+				//	glVertex3f(m1->vertex(v1).P().x, m1->vertex(v1).P().y, 0);
+				//	glVertex3f(m1->vertex(v2).P().x, m1->vertex(v2).P().y, 0);
+
+				//glEnd();
+			}
+			glDisable(GL_TEXTURE_2D);
+			glDisable(GL_LINE_SMOOTH);
+			glDisable(GL_BLEND);
+			
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
 		void SheetCanvas::drawVertex(SkeletonVertex* v) {
@@ -520,28 +586,92 @@ namespace cacani {
 				float x0 = m_deformedMesh->vertex(nSelected).P().x;
 				float y0 = m_deformedMesh->vertex(nSelected).P().y;
 				
-				//Obtain its transformation matrix
-				ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-				currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
-				GLfloat* imgMatrix = currImg.getTransformMatrix();
+				////Obtain its transformation matrix
+				//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+				//currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+				//GLfloat* imgMatrix = currImg.getTransformMatrix();
 
 
-				//Matrix multiplication to obtain changes in the coordinates
-				float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
-				float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
+				////Matrix multiplication to obtain changes in the coordinates
+				//float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
+				//float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
 
-				//Scale all points due to the resizing in paintGL()
-				float scaleAmt = 1.0 / 100;
-				finalX *= scaleAmt;
-				finalY *= scaleAmt;
+				////Scale all points due to the resizing in paintGL()
+				//float scaleAmt = 1.0 / 100;
+				//finalX *= scaleAmt;
+				//finalY *= scaleAmt;
 
 				glBegin(GL_QUADS);
-				glVertex2f(finalX - 0.03, finalY - 0.03);
-				glVertex2f(finalX + 0.03, finalY - 0.03);
-				glVertex2f(finalX + 0.03, finalY + 0.03);
-				glVertex2f(finalX - 0.03, finalY + 0.03);
+				glVertex2f(x0 - 0.03, y0 - 0.03);
+				glVertex2f(x0 + 0.03, y0 - 0.03);
+				glVertex2f(x0 + 0.03, y0 + 0.03);
+				glVertex2f(x0 - 0.03, y0 + 0.03);
 				glEnd();
 			}
+		}
+
+		void SheetCanvas::mapTextureToMesh(ImageFile currImg, TTextureMesh* m_mesh) {
+			glDisable(GL_LIGHTING);
+			glEnable(GL_BLEND);
+			glDisable(GL_CULL_FACE);
+			glEnable(GL_TEXTURE_2D);
+
+			glBindTexture(GL_TEXTURE_2D, currImg.m_imgTexture);
+			////glFrontFace(GL_FRONT_AND_BACK);
+			
+			//Hardcode texture mapping first
+			glBegin(GL_POLYGON);
+			glTexCoord2f(0.0f, 0.0f);	glVertex2f(m_mesh->vertex(1).P().x, m_mesh->vertex(1).P().y);
+			glTexCoord2f(0.0f, 0.25f);	glVertex2f(m_mesh->vertex(13).P().x, m_mesh->vertex(13).P().y); 
+			glTexCoord2f(0.0f, 0.5f);	glVertex2f(m_mesh->vertex(5).P().x, m_mesh->vertex(5).P().y);
+			glTexCoord2f(0.0f, 0.75f);	glVertex2f(m_mesh->vertex(14).P().x, m_mesh->vertex(14).P().y);
+			glTexCoord2f(0.0f, 1.0f);	glVertex2f(m_mesh->vertex(2).P().x, m_mesh->vertex(2).P().y);
+			glTexCoord2f(0.5f, 1.0f);	glVertex2f(m_mesh->vertex(6).P().x, m_mesh->vertex(6).P().y);
+			glTexCoord2f(1.0f, 1.0f);	glVertex2f(m_mesh->vertex(0).P().x, m_mesh->vertex(0).P().y);
+			glTexCoord2f(1.0f, 0.75f);	glVertex2f(m_mesh->vertex(15).P().x, m_mesh->vertex(15).P().y);
+			glTexCoord2f(1.0f, 0.5f);	glVertex2f(m_mesh->vertex(7).P().x, m_mesh->vertex(7).P().y);
+			glTexCoord2f(1.0f, 0.25f);	glVertex2f(m_mesh->vertex(16).P().x, m_mesh->vertex(16).P().y);
+			glTexCoord2f(1.0f, 0.0f);	glVertex2f(m_mesh->vertex(3).P().x, m_mesh->vertex(3).P().y);
+			glTexCoord2f(0.5f, 0.0f);	glVertex2f(m_mesh->vertex(8).P().x, m_mesh->vertex(8).P().y);
+			glEnd();
+
+
+			// This part does not work well, image does not rotate and it has empty triangles
+			//int nFaces = m_mesh->facesCount();
+			//for (int i = 0; i < nFaces; i++) {
+
+			//	QVector2D imageWidthRange = obtainWidthRange(m_mesh);
+			//	QVector2D imageHeightRange = obtainHeightRange(m_mesh);
+
+			//	int v0 = m_mesh->edge(m_mesh->face(i).edge(0)).vertex(0);
+			//	int v1 = m_mesh->edge(m_mesh->face(i).edge(0)).vertex(1);
+			//	int v2 = m_mesh->edge(m_mesh->face(i).edge(1)).vertex(1);
+
+			//	//For v0
+			//	QVector2D v0coord(m_mesh->vertex(v0).P().x, m_mesh->vertex(v0).P().y);
+			//	QVector2D v0tex = convertToUV(v0coord, imageHeightRange, imageWidthRange);
+
+			//	//For v1
+			//	QVector2D v1coord(m_mesh->vertex(v1).P().x, m_mesh->vertex(v1).P().y);
+			//	QVector2D v1tex = convertToUV(v1coord, imageHeightRange, imageWidthRange);
+
+			//	//For v2
+			//	QVector2D v2coord(m_mesh->vertex(v2).P().x, m_mesh->vertex(v2).P().y);
+			//	QVector2D v2tex = convertToUV(v2coord, imageHeightRange, imageWidthRange);
+
+
+			//	glBegin(GL_TRIANGLES);
+			//	glTexCoord2f(v0tex.x(), v0tex.y());	glVertex2f(v0coord.x(), v0coord.y());
+			//	glTexCoord2f(v1tex.x(), v1tex.y());	glVertex2f(v1coord.x(), v1coord.y());
+			//	glTexCoord2f(v2tex.x(), v2tex.y());	glVertex2f(v2coord.x(), v2coord.y());
+			//	glEnd();
+
+			//}
+
+			glDisable(GL_TEXTURE_2D);
+
+
+			glDisable(GL_BLEND);
 		}
 
 		//----------------------------//
@@ -627,8 +757,6 @@ namespace cacani {
 			glCullFace(GL_BACK);
 			glEnable(GL_CULL_FACE);
 
-
-
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -700,6 +828,7 @@ namespace cacani {
 					}
 				}
 
+				
 				/*if (viewMesh) {
 					for (int i = 0; i < m_imageGroup->size(); i++) {
 						if (m_imageGroup->m_images[i].getMeshImage().getPointer() != NULL)
@@ -726,7 +855,7 @@ namespace cacani {
 				}*/
 
 
-				glScaled(100, 100, 1);				
+				glScaled(100, 100, 1);	
 
 				//glutSwapBuffers();
 				if (m_IKEnabled){
@@ -741,6 +870,38 @@ namespace cacani {
 					sprintf(message2, "Selected Mesh Vertex ID: %d", selectedVertex);
 					drawMessage(2, message2);
 					drawHandles();
+				}
+
+
+				if (meshInitialized) {
+					ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					if (currImg.m_imgTexture == 0)
+						createTextureForGL(currImg);
+					renderDeformedMesh(m_deformedMesh);
+					
+					mapTextureToMesh(currImg, m_deformedMesh);
+
+					//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					//if (currImg.m_imgTexture == 0)
+					//	createTextureForGL(currImg);
+					
+					//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+					//glEnable(GL_TEXTURE_2D);
+					//glBindTexture(GL_TEXTURE_2D, currImg.m_imgTexture);
+					//glTranslatef(0, 1, 0);
+					
+					//glutWireTeapot(0.5);
+					//glutSolidTeapot(0.5);
+					/*glBegin(GL_QUADS);
+					glVertex2f(m_deformedMesh->vertex(1).P().x, m_deformedMesh->vertex(1).P().y);
+					glVertex2f(m_deformedMesh->vertex(2).P().x, m_deformedMesh->vertex(2).P().y);
+					glVertex2f(m_deformedMesh->vertex(0).P().x, m_deformedMesh->vertex(0).P().y);
+					glVertex2f(m_deformedMesh->vertex(3).P().x, m_deformedMesh->vertex(3).P().y);
+					glEnd();*/
+					//renderDeformedMesh(m_deformedMesh);
+					//glFlush();
+					//glDisable(GL_TEXTURE_2D);
+
 				}
 
 			}
@@ -819,6 +980,55 @@ namespace cacani {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_TEXTURE_2D);
+		}
+
+		QVector2D SheetCanvas::obtainHeightRange(TTextureMesh* m_mesh) {
+			float curr = 0, min = 0, max = 0;
+			QVector2D range;
+
+			int numVert = m_mesh->verticesCount();
+			for (int i = 0; i < numVert; i++) {
+				curr = m_mesh->vertex(i).P().y;
+				if (curr < min)
+					min = curr;
+				else if (curr > max)
+					max = curr;
+			}
+
+			range.setX(min);
+			range.setY(max);
+
+			return range;
+		}
+
+		QVector2D SheetCanvas::obtainWidthRange(TTextureMesh* m_mesh) {
+			float curr = 0, min = 0, max = 0;
+			QVector2D range;
+
+			int numVert = m_mesh->verticesCount();
+			for (int i = 0; i < numVert; i++) {
+				curr = m_mesh->vertex(i).P().x;
+				if (curr < min)
+					min = curr;
+				else if (curr > max)
+					max = curr;
+			}
+
+			range.setX(min);
+			range.setY(max);
+
+			return range;
+		}
+
+		QVector2D SheetCanvas::convertToUV(QVector2D coord, QVector2D imageHeightRange, QVector2D imageWidthRange) {
+			QVector2D uvCoord;
+			float coordX = coord.x();
+			float coordY = coord.y();
+			
+			uvCoord.setX((coordX - imageWidthRange.x()) / (imageWidthRange.y() - imageWidthRange.x()));
+			uvCoord.setY((coordY - imageHeightRange.x()) / (imageHeightRange.y() - imageHeightRange.x()));
+
+			return uvCoord;
 		}
 
 		//-------------------------//
@@ -940,7 +1150,8 @@ namespace cacani {
 			else if (canvasState == STATE_MAPPING) {
 				//Get position of mouse click
 				mouseToWorld(lastPos.x(), lastPos.y());
-				selectedVertex = collisionMesh();
+				if (meshInitialized)
+					selectedVertex = collisionMesh(*m_deformedMesh);
 				if (event->buttons() & Qt::MiddleButton) {
 					InitializeDeformedMesh();
 					meshInitialized = true;
@@ -953,11 +1164,15 @@ namespace cacani {
 							m_vSelected.erase(selectedVertex);
 							m_deformer.removeHandle(selectedVertex);
 
-							//Restore position
+							//Restore position, deformed mesh has coordinates taking into account transformation matrix
 							Wml::Vector3f vVertex;
 							TTextureMesh* m_mesh = m_imageGroup->m_images.at(m_imageList->currentIndex().row()).getMeshImage().getPointer()->meshes().at(0).getPointer();
-							m_deformedMesh->vertex(selectedVertex).P().x = m_mesh->vertex(selectedVertex).P().x;
-							m_deformedMesh->vertex(selectedVertex).P().y = m_mesh->vertex(selectedVertex).P().y;
+							ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+							
+							Wml::Vector2f coordinates = obtainCoordForDeformedMesh(m_mesh, selectedVertex, currImg);
+
+							m_deformedMesh->vertex(selectedVertex).P().x = coordinates.X();
+							m_deformedMesh->vertex(selectedVertex).P().y = coordinates.Y();
 						}
 
 						InvalidateConstraints();
@@ -1023,7 +1238,7 @@ namespace cacani {
 				}
 			}
 			else if (event->buttons() & Qt::LeftButton && canvasState == STATE_MAPPING) {
-				if (selectedVertex != -1) {
+				if (m_vSelected.find(selectedVertex) != m_vSelected.end() && meshInitialized) {
 					//Get position of mouse in world coordinates
 					mouseToWorld(lastPos.x(), lastPos.y());
 					m_deformedMesh->vertex(selectedVertex).P().x = objX;
@@ -1149,57 +1364,26 @@ namespace cacani {
 				return false;
 		}
 
-		int SheetCanvas::collisionMesh() {
+		int SheetCanvas::collisionMesh(TTextureMesh m_mesh) {
 			//Get mouse click position
 			QVector2D mouseClickPos(objX, objY);
+					
+			//Obtain vertices from the mesh and initialize an iterator
+			tcg::list<TTextureVertex> vertexHolder = m_mesh.vertices();
+			tcg::list<TTextureVertex>::iterator it = vertexHolder.begin();
 
-			//Obtain mesh
-			if (m_imageGroup->size() != 0) {
-				if (m_imageGroup->m_images[0].getMeshImage().getPointer() != NULL) {
+			QVector2D meshVertex;
+			for (; it != vertexHolder.end(); it++) {
+				float x0 = it->P().x;
+				float y0 = it->P().y;
+				QVector2D meshVertex(x0, y0);
 
-					//Get TMeshImage from currently selected image
-					ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-					TMeshImage* m_mesh = currImg.getMeshImage().getPointer();
-
-					//Obtain vertices from the mesh and initialize an iterator
-					tcg::list<TTextureVertex> vertexHolder = m_mesh->meshes().at(0).getPointer()->vertices();
-					tcg::list<TTextureVertex>::iterator it = vertexHolder.begin();
-
-					//Obtain its transformation matrix
-					currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
-					GLfloat* imgMatrix = currImg.getTransformMatrix();
-
-
-					//vector<float> xPositions, yPositions;
-
-					QVector2D meshVertex;
-					for (; it != vertexHolder.end(); it++) {
-						float x0 = it->P().x;
-						float y0 = it->P().y;
-
-						//Matrix multiplication to obtain changes in the coordinates
-						float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
-						float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
-
-						//Scale all points like the resizing in paintGL()
-						float scaleAmt = 1.0 / 100;
-						finalX *= scaleAmt;
-						finalY *= scaleAmt;
-
-						////Store all vertices in a vector for reference and debugging
-						//xPositions.push_back(finalX);
-						//yPositions.push_back(finalY);
-
-						meshVertex.setX(finalX);
-						meshVertex.setY(finalY);
-
-						float distance = mouseClickPos.distanceToPoint(meshVertex);
-						if (distance < 0.04) {
-							return it.index();
-						}
-					}
+				float distance = mouseClickPos.distanceToPoint(meshVertex);
+				if (distance < 0.05) {
+					return it.index();
 				}
 			}
+				
 			return -1;
 		}
 
@@ -1586,31 +1770,43 @@ namespace cacani {
 
 		void SheetCanvas::InitializeDeformedMesh() {
 			m_deformedMesh->clear();
-
-			TTextureMesh* m_mesh = m_imageGroup->m_images.at(m_imageList->currentIndex().row()).getMeshImage().getPointer()->meshes().at(0).getPointer();
 			
+			ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+			TTextureMesh* m_mesh = currImg.getMeshImage().getPointer()->meshes().at(0).getPointer();
+			
+			//Obtain its transformation matrix
+			currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+			GLfloat* imgMatrix = currImg.getTransformMatrix();
+
 			unsigned int nVerts = m_mesh->verticesCount();
 			for (unsigned int i = 0; i < nVerts; ++i) {
+				
 				TTextureVertex vVertex;
-				vVertex.P().x = m_mesh->vertex(i).P().x;
-				vVertex.P().y = m_mesh->vertex(i).P().y;
+				Wml::Vector2f coord = obtainCoordForDeformedMesh(m_mesh, i, currImg);
+				vVertex.P().x = coord.X();
+				vVertex.P().y = coord.Y();
+
 				m_deformedMesh->addVertex(vVertex);
 			}
 
 			unsigned int nTris = m_mesh->facesCount();
 			for (unsigned int i = 0; i < nTris; ++i) {
 				unsigned int nTriangle[3];
-				int v0, v1, v2;
+				int v0, v1, v2, v3;
 				v0 = m_mesh->edge(m_mesh->face(i).edge(0)).vertex(0);
 				v1 = m_mesh->edge(m_mesh->face(i).edge(0)).vertex(1);
 				v2 = m_mesh->edge(m_mesh->face(i).edge(1)).vertex(1);
-				m_deformedMesh->addFace(v0, v1, v2);
+				v3 = m_mesh->edge(m_mesh->face(i).edge(1)).vertex(0);
+
+				if (v2 == v0 || v2 == v1)
+					m_deformedMesh->addFace(v0, v1, v3);
+				else
+					m_deformedMesh->addFace(v0, v1, v2);
 			}
 
-			m_deformer.initializeFromMesh(m_mesh);
+			m_deformer.initializeFromMesh(m_deformedMesh);
 			InvalidateConstraints();
 		}
-
 
 		void SheetCanvas::UpdateDeformedMesh()
 		{
@@ -1618,6 +1814,27 @@ namespace cacani {
 			m_deformer.UpdateDeformedMesh(m_deformedMesh, true);
 		}
 
+		Wml::Vector2f SheetCanvas::obtainCoordForDeformedMesh(TTextureMesh* deformedMesh, int vertID, ImageFile currImg) {
+			float x0 = deformedMesh->vertex(vertID).P().x;
+			float y0 = deformedMesh->vertex(vertID).P().y;
+
+			//Obtain its transformation matrix
+			currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
+			GLfloat* imgMatrix = currImg.getTransformMatrix();
+
+			//Matrix multiplication to obtain changes in the coordinates
+			float finalX = *imgMatrix * x0 + *(imgMatrix + 4) * y0 + *(imgMatrix + 8) * 0 + *(imgMatrix + 12) * 1;
+			float finalY = *(imgMatrix + 1) * x0 + *(imgMatrix + 5) * y0 + *(imgMatrix + 9) * 0 + *(imgMatrix + 13) * 1;
+
+			//Scale all points like the resizing in paintGL()
+			float scaleAmt = 1.0 / 100;
+			finalX *= scaleAmt;
+			finalY *= scaleAmt;
+
+			Wml::Vector2f coordinate(finalX, finalY);
+
+			return coordinate;
+		}
 
 
 		//--------------------------------------//

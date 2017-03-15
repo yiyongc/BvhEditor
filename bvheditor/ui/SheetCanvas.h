@@ -166,7 +166,7 @@ namespace cacani {
 			void highlightSelectedVertex();
 			void mouseToWorld(double x, double y);
 			bool clickCollision(QVector2D pointCenter);
-			int collisionMesh();
+			int collisionMesh(TTextureMesh mesh);
 			void updateSelectedVertex(int id);
 			void drawSkeleton();
 
@@ -183,6 +183,10 @@ namespace cacani {
 			void InitializeDeformedMesh();
 			void UpdateDeformedMesh();
 			void drawHandles();
+			QVector2D obtainHeightRange(TTextureMesh* m_mesh);
+			QVector2D obtainWidthRange(TTextureMesh* m_mesh);
+			QVector2D convertToUV(QVector2D coord, QVector2D imageHeightRange, QVector2D imageWidthRange);
+			void mapTextureToMesh(ImageFile currImg, TTextureMesh* m_mesh);
 
 		public:
 			void animate();
@@ -203,7 +207,10 @@ namespace cacani {
 			void renderImage(ImageFile img);
 			void renderMesh(ImageFile img);
 			
+			void renderDeformedMesh(TTextureMesh* mesh);
 			void updateState(int state);
+
+			Wml::Vector2f obtainCoordForDeformedMesh(TTextureMesh* deformedMesh, int vertID, ImageFile currImg);
 
 			private slots:
 				void playCanvas();

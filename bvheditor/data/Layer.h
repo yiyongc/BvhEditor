@@ -57,7 +57,6 @@ namespace cacani {
 			bool				 is_selected;
 			ChannelOrder		 channel_order;
 
-			//xiaocai added
 			double               offsetOriginal[3];
 			double               siteOriginal[3];
 		};

@@ -61,7 +61,8 @@ void RigidMeshDeformer2D::initializeFromMesh(TTextureMesh* m_mesh) {
 	unsigned int nVerts = m_mesh->verticesCount();
 	for (int i = 0; i < nVerts; ++i) {
 		Vertex v;
-
+		float x0 = m_mesh->vertex(i).P().x;
+		float y0 = m_mesh->vertex(i).P().y;
 		v.vPosition = Wml::Vector2f(m_mesh->vertex(i).P().x, m_mesh->vertex(i).P().y);
 		m_vInitialVerts.push_back(v);
 		m_vDeformedVerts.push_back(v);
@@ -78,11 +79,16 @@ void RigidMeshDeformer2D::initializeFromMesh(TTextureMesh* m_mesh) {
 		int vID1 = m_mesh->edge(edge1).vertex(0);
 		int vID2 = m_mesh->edge(edge1).vertex(1);
 		int vID3 = m_mesh->edge(edge2).vertex(1);
+		int vID4 = m_mesh->edge(edge2).vertex(0);
 
 		t.nVerts[0] = vID1;
 		t.nVerts[1] = vID2;
-		t.nVerts[2] = vID3;
-
+		if (vID4 == vID1 || vID4 == vID2)
+			t.nVerts[2] = vID3;
+		else
+			t.nVerts[2] = vID4;
+		
+		
 		m_vTriangles.push_back(t);
 	}
 
@@ -143,7 +149,10 @@ void RigidMeshDeformer2D::UpdateConstraint(Constraint & cons) {
 	if (found != m_vConstraints.end()) {
 
 		//Update position
-		(*found).vConstrainedPos = cons.vConstrainedPos;
+		//(*found).vConstrainedPos[0] = cons.vConstrainedPos[0];
+
+		memcpy(&(*found).vConstrainedPos, &cons.vConstrainedPos, 2 * sizeof(float));
+
 		m_vDeformedVerts[cons.nVertex].vPosition = cons.vConstrainedPos;
 
 	}
@@ -206,11 +215,11 @@ void RigidMeshDeformer2D::ValidateDeformedMesh(bool bRigid) {
 	if (bRigid) {
 		// ok, now scale triangles
 		size_t nTris = m_vTriangles.size();
-		for (unsigned int i = 0; i < nTris; ++i)
-			UpdateScaledTriangle(i);
+		//for (unsigned int i = 0; i < nTris; ++i)
+		//	UpdateScaledTriangle(i);
 
 
-		ApplyFittingStep();
+		//ApplyFittingStep();
 	}
 }
 
@@ -374,7 +383,6 @@ void RigidMeshDeformer2D::ApplyFittingStep() {
 		m_vDeformedVerts[i].vPosition.Y() = (float)vSolutionY[nRow];
 	}
 }
-
 
 void RigidMeshDeformer2D::PrecomputeOrientationMatrix() {
 	// put constraints into vector
@@ -575,6 +583,7 @@ void RigidMeshDeformer2D::PrecomputeOrientationMatrix() {
 		DebugBreak();
 
 	// now compute -GPrimeInverse * B
+	Wml::GMatrixd lol = mGPrimeInverse.operator*(mB);
 	Wml::GMatrixd mFinal = mGPrimeInverse * mB;
 	mFinal *= -1;
 
