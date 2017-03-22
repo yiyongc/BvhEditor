@@ -4,7 +4,9 @@ ImageFile::ImageFile(QString name, QImage img) :
 	m_imgName(name),
 	m_img(img),
 	m_imgTexture(0),
-	m_meshImg(0) 
+	m_meshImg(0), 
+	m_deformedMesh(new TTextureMesh),
+	m_deformer(RigidMeshDeformer2D())
 {
 	//column by column initialize transform matrix to identity
 	m_transformMatrix[0] = 1;
@@ -120,4 +122,26 @@ float ImageFile::getImageScale() {
  
 void ImageFile::setImageScale(float scaleValue) {
 	scaleImg = scaleValue;
+}
+
+void ImageFile::validateConstraints()
+{
+	if (m_bConstraintsValid)
+		return;
+
+	size_t nConstraints = m_vSelected.size();
+	std::set<unsigned int>::iterator cur(m_vSelected.begin()), end(m_vSelected.end());
+	while (cur != end) {
+		unsigned int nVertex = *cur++;
+		Wml::Vector3f vVertex;
+		vVertex.X() = m_deformedMesh->vertex(nVertex).P().x;
+		vVertex.Y() = m_deformedMesh->vertex(nVertex).P().y;
+		vVertex.Z() = 0;
+		//m_deformedMesh.GetVertex(nVertex, vVertex);
+		m_deformer.SetDeformedHandle(nVertex, Wml::Vector2f(vVertex.X(), vVertex.Y()));
+	}
+
+	m_deformer.ForceValidation();
+
+	m_bConstraintsValid = true;
 }

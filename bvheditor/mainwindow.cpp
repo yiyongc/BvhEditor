@@ -428,6 +428,7 @@ void MainWindow::createMesh() {
 	int imageSelection = m_ImageListWidget->currentIndex().row();
 
 	if (imageSelection != -1) {
+		ImageFile* m_img = &m_SheetCanvas->m_imageGroup->m_images.at(imageSelection);
 		QImage* selectedImage = &m_SheetCanvas->m_imageGroup->m_images.at(imageSelection).getQImage();
 	
 		MeshBuilderOptions(opts);
@@ -449,8 +450,9 @@ void MainWindow::createMesh() {
 
 			meshImage->setDpi(meshDpi.x, meshDpi.y);
 		
-
-			m_SheetCanvas->m_imageGroup->m_images.at(imageSelection).setMeshImage(meshImage);
+			m_img->setMeshImage(meshImage);
+			if (m_img->getMeshImage().getPointer() != NULL)
+				m_SheetCanvas->InitializeDeformedMesh(m_img);
 		}
 	}
 	else {
@@ -486,7 +488,8 @@ void MainWindow::deleteImage() {
 		}
 
 		m_ImageListWidget->update();
-		m_ImageListWidget->item(0)->setSelected(true);
+		if (m_ImageListWidget->count() != 0)
+			m_ImageListWidget->item(0)->setSelected(true);
 		m_ImageListWidget->setCurrentRow(0);
 		m_SheetCanvas->update();
 	}

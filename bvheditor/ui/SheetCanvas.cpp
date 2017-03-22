@@ -54,7 +54,7 @@ namespace cacani {
 			m_timer_selected = new QTimer(this);
 			updateState(STATE_CAMERA);
 			m_skeleton = NULL;
-			m_deformedMesh = new TTextureMesh;
+			//m_deformedMesh = new TTextureMesh;
 
 			connect(m_timer_selected, SIGNAL(timeout()), this, SLOT(playCanvasSelected()));
 			connect(m_timer, SIGNAL(timeout()), this, SLOT(playCanvas()));
@@ -401,7 +401,7 @@ namespace cacani {
 
 			glColor4f(0.0, 1.0, 0.0, 0.7); // Translucent green
 
-			if (meshInitialized) {
+			//if (meshInitialized) {
 				///*TMeshImage m1 = TMeshImage();
 				//m1.meshes().push_back(m_deformedMesh);
 				//tglDrawEdges(m1);*/
@@ -420,8 +420,8 @@ namespace cacani {
 				//	glVertex3f(m_deformedMesh->vertex(v2).P().x, m_deformedMesh->vertex(v2).P().y, 0);
 				//	glEnd();
 				//}
-			}
-			else
+			//}
+			//else
 				tglDrawEdges(*img.getMeshImage());
 
 
@@ -457,24 +457,14 @@ namespace cacani {
 				int v0 = m1->edge(m1->face(i).edge(0)).vertex(0);
 				int v1 = m1->edge(m1->face(i).edge(0)).vertex(1);
 				int v2 = m1->edge(m1->face(i).edge(1)).vertex(1);
-				
-				//For v0
 				QVector2D v0coord(m1->vertex(v0).P().x, m1->vertex(v0).P().y);
-				QVector2D v0tex = convertToUV(v0coord, imageHeightRange, imageWidthRange);
-
-				//For v1
 				QVector2D v1coord(m1->vertex(v1).P().x, m1->vertex(v1).P().y);
-				QVector2D v1tex = convertToUV(v1coord, imageHeightRange, imageWidthRange);
-
-				//For v2
 				QVector2D v2coord(m1->vertex(v2).P().x, m1->vertex(v2).P().y);
-				QVector2D v2tex = convertToUV(v2coord, imageHeightRange, imageWidthRange);
-
 
 				glBegin(GL_TRIANGLES);
-				glTexCoord2f(v0tex.x(), v0tex.y());	glVertex2f(v0coord.x(), v0coord.y());
-				glTexCoord2f(v1tex.x(), v1tex.y());	glVertex2f(v1coord.x(), v1coord.y());
-				glTexCoord2f(v2tex.x(), v2tex.y());	glVertex2f(v2coord.x(), v2coord.y());
+				glVertex2f(v0coord.x(), v0coord.y());
+				glVertex2f(v1coord.x(), v1coord.y());
+				glVertex2f(v2coord.x(), v2coord.y());
 				glEnd();
 
 
@@ -574,17 +564,17 @@ namespace cacani {
 			update();
 		}
 
-		void SheetCanvas::drawHandles() {
+		void SheetCanvas::drawHandles(ImageFile* m_img) {
 			//glLoadIdentity();
 			glColor3f(1.0f, 0.0f, 0.0f);
 			
-			std::set<unsigned int>::iterator cur(m_vSelected.begin()), end(m_vSelected.end());
+			std::set<unsigned int>::iterator cur(m_img->m_vSelected.begin()), end(m_img->m_vSelected.end());
 			while (cur != end) {
 				unsigned int nSelected = *cur++;
 
 				Wml::Vector3f vSelected;
-				float x0 = m_deformedMesh->vertex(nSelected).P().x;
-				float y0 = m_deformedMesh->vertex(nSelected).P().y;
+				float x0 = m_img->getDeformedMesh()->vertex(nSelected).P().x;
+				float y0 = m_img->getDeformedMesh()->vertex(nSelected).P().y;
 				
 				////Obtain its transformation matrix
 				//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
@@ -766,8 +756,13 @@ namespace cacani {
 
 		void SheetCanvas::paintGL()
 		{
-			if (meshInitialized)
-				UpdateDeformedMesh();
+			//if (meshInitialized)
+			int nImg = m_imageGroup->m_images.size();
+			for (int i = 0; i < nImg; i++) {
+				if (m_imageGroup->m_images.at(i).getDeformedMesh()->facesCount() != 0)
+					UpdateDeformedMesh(&m_imageGroup->m_images.at(i));
+			}
+			//UpdateDeformedMesh();
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			
@@ -869,17 +864,20 @@ namespace cacani {
 					drawMessage(1, message1);
 					sprintf(message2, "Selected Mesh Vertex ID: %d", selectedVertex);
 					drawMessage(2, message2);
-					drawHandles();
+					for (int k = 0; k < nImg; k++)
+						drawHandles(&m_imageGroup->m_images.at(k));
 				}
 
 
-				if (meshInitialized) {
-					ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-					if (currImg.m_imgTexture == 0)
-						createTextureForGL(currImg);
-					renderDeformedMesh(m_deformedMesh);
+				//if (meshInitialized) {
+				for (int j = 0; j < nImg; j++) {
+					ImageFile currImg = m_imageGroup->m_images.at(j);
+					//if (currImg.m_imgTexture == 0)
+					//	createTextureForGL(currImg);
+					if (currImg.getDeformedMesh()->facesCount() != 0)
+						renderDeformedMesh(currImg.getDeformedMesh());
 					
-					mapTextureToMesh(currImg, m_deformedMesh);
+					//mapTextureToMesh(currImg, m_deformedMesh);
 
 					//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
 					//if (currImg.m_imgTexture == 0)
@@ -1150,32 +1148,35 @@ namespace cacani {
 			else if (canvasState == STATE_MAPPING) {
 				//Get position of mouse click
 				mouseToWorld(lastPos.x(), lastPos.y());
-				if (meshInitialized)
-					selectedVertex = collisionMesh(*m_deformedMesh);
-				if (event->buttons() & Qt::MiddleButton) {
+				
+				ImageFile* selectedImg = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+				//if (meshInitialized)
+				selectedVertex = collisionMesh(*selectedImg->getDeformedMesh());
+
+				/*if (event->buttons() & Qt::MiddleButton) {
 					InitializeDeformedMesh();
 					meshInitialized = true;
-				}
+				}*/
 				if (event->buttons() & Qt::RightButton) {
 					if (selectedVertex != -1) {
-						if (m_vSelected.find(selectedVertex) == m_vSelected.end())
-							m_vSelected.insert(selectedVertex);
+						if (selectedImg->m_vSelected.find(selectedVertex) == selectedImg->m_vSelected.end())
+							selectedImg->m_vSelected.insert(selectedVertex);
 						else {
-							m_vSelected.erase(selectedVertex);
-							m_deformer.removeHandle(selectedVertex);
+							selectedImg->m_vSelected.erase(selectedVertex);
+							selectedImg->m_deformer.removeHandle(selectedVertex);
 
 							//Restore position, deformed mesh has coordinates taking into account transformation matrix
 							Wml::Vector3f vVertex;
-							TTextureMesh* m_mesh = m_imageGroup->m_images.at(m_imageList->currentIndex().row()).getMeshImage().getPointer()->meshes().at(0).getPointer();
-							ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+							TTextureMesh* m_mesh = selectedImg->getMeshImage().getPointer()->meshes().at(0).getPointer();
+							//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
 							
-							Wml::Vector2f coordinates = obtainCoordForDeformedMesh(m_mesh, selectedVertex, currImg);
+							Wml::Vector2f coordinates = obtainCoordForDeformedMesh(m_mesh, selectedVertex, *selectedImg);
 
-							m_deformedMesh->vertex(selectedVertex).P().x = coordinates.X();
-							m_deformedMesh->vertex(selectedVertex).P().y = coordinates.Y();
+							selectedImg->getDeformedMesh()->vertex(selectedVertex).P().x = coordinates.X();
+							selectedImg->getDeformedMesh()->vertex(selectedVertex).P().y = coordinates.Y();
 						}
 
-						InvalidateConstraints();
+						selectedImg->invalidateConstraints();
 
 					}
 				}
@@ -1238,12 +1239,14 @@ namespace cacani {
 				}
 			}
 			else if (event->buttons() & Qt::LeftButton && canvasState == STATE_MAPPING) {
-				if (m_vSelected.find(selectedVertex) != m_vSelected.end() && meshInitialized) {
+				ImageFile* selectedImg = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+
+				if (selectedImg->m_vSelected.find(selectedVertex) != selectedImg->m_vSelected.end()) {
 					//Get position of mouse in world coordinates
 					mouseToWorld(lastPos.x(), lastPos.y());
-					m_deformedMesh->vertex(selectedVertex).P().x = objX;
-					m_deformedMesh->vertex(selectedVertex).P().y = objY;
-					InvalidateConstraints();
+					selectedImg->getDeformedMesh()->vertex(selectedVertex).P().x = objX;
+					selectedImg->getDeformedMesh()->vertex(selectedVertex).P().y = objY;
+					selectedImg->invalidateConstraints();
 				}
 			}
 
@@ -1741,52 +1744,49 @@ namespace cacani {
 
 		//---- Mesh Deforming Functionality ----//
 
-		void SheetCanvas::InvalidateConstraints()
+		/*void SheetCanvas::InvalidateConstraints()
 		{
 			m_bConstraintsValid = false;
-		}
+		}*/
 
-		void SheetCanvas::ValidateConstraints()
-		{
-			if (m_bConstraintsValid)
-				return;
+		//void SheetCanvas::ValidateConstraints()
+		//{
+		//	if (m_bConstraintsValid)
+		//		return;
 
-			size_t nConstraints = m_vSelected.size();
-			std::set<unsigned int>::iterator cur(m_vSelected.begin()), end(m_vSelected.end());
-			while (cur != end) {
-				unsigned int nVertex = *cur++;
-				Wml::Vector3f vVertex;
-				vVertex.X() = m_deformedMesh->vertex(nVertex).P().x;
-				vVertex.Y() = m_deformedMesh->vertex(nVertex).P().y;
-				vVertex.Z() = 0;
-				//m_deformedMesh.GetVertex(nVertex, vVertex);
-				m_deformer.SetDeformedHandle(nVertex, Wml::Vector2f(vVertex.X(), vVertex.Y()));
-			}
+		//	size_t nConstraints = m_vSelected.size();
+		//	std::set<unsigned int>::iterator cur(m_vSelected.begin()), end(m_vSelected.end());
+		//	while (cur != end) {
+		//		unsigned int nVertex = *cur++;
+		//		Wml::Vector3f vVertex;
+		//		vVertex.X() = m_deformedMesh->vertex(nVertex).P().x;
+		//		vVertex.Y() = m_deformedMesh->vertex(nVertex).P().y;
+		//		vVertex.Z() = 0;
+		//		//m_deformedMesh.GetVertex(nVertex, vVertex);
+		//		m_deformer.SetDeformedHandle(nVertex, Wml::Vector2f(vVertex.X(), vVertex.Y()));
+		//	}
 
-			m_deformer.ForceValidation();
+		//	m_deformer.ForceValidation();
 
-			m_bConstraintsValid = true;
-		}
+		//	m_bConstraintsValid = true;
+		//}
 
-		void SheetCanvas::InitializeDeformedMesh() {
-			m_deformedMesh->clear();
+		void SheetCanvas::InitializeDeformedMesh(ImageFile* m_img) {
+			TTextureMesh* deformedMesh = m_img->getDeformedMesh();
+			if (deformedMesh != NULL)
+				deformedMesh->clear();
 			
-			ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-			TTextureMesh* m_mesh = currImg.getMeshImage().getPointer()->meshes().at(0).getPointer();
+			TTextureMesh* m_mesh = m_img->getMeshImage().getPointer()->meshes().at(0).getPointer();
 			
-			//Obtain its transformation matrix
-			currImg.setTransformMatrix(currImg.getImageRotation(), currImg.getImageXTrans(), currImg.getImageYTrans(), currImg.getImageScale());
-			GLfloat* imgMatrix = currImg.getTransformMatrix();
-
 			unsigned int nVerts = m_mesh->verticesCount();
 			for (unsigned int i = 0; i < nVerts; ++i) {
 				
 				TTextureVertex vVertex;
-				Wml::Vector2f coord = obtainCoordForDeformedMesh(m_mesh, i, currImg);
+				Wml::Vector2f coord = obtainCoordForDeformedMesh(m_mesh, i, *m_img);
 				vVertex.P().x = coord.X();
 				vVertex.P().y = coord.Y();
 
-				m_deformedMesh->addVertex(vVertex);
+				deformedMesh->addVertex(vVertex);
 			}
 
 			unsigned int nTris = m_mesh->facesCount();
@@ -1799,19 +1799,19 @@ namespace cacani {
 				v3 = m_mesh->edge(m_mesh->face(i).edge(1)).vertex(0);
 
 				if (v2 == v0 || v2 == v1)
-					m_deformedMesh->addFace(v0, v1, v3);
+					deformedMesh->addFace(v0, v1, v3);
 				else
-					m_deformedMesh->addFace(v0, v1, v2);
+					deformedMesh->addFace(v0, v1, v2);
 			}
 
-			m_deformer.initializeFromMesh(m_deformedMesh);
-			InvalidateConstraints();
+			m_img->m_deformer.initializeFromMesh(deformedMesh);
+			m_img->invalidateConstraints();
 		}
 
-		void SheetCanvas::UpdateDeformedMesh()
+		void SheetCanvas::UpdateDeformedMesh(ImageFile* m_img)
 		{
-			ValidateConstraints();
-			m_deformer.UpdateDeformedMesh(m_deformedMesh, true);
+			m_img->validateConstraints();
+			m_img->m_deformer.UpdateDeformedMesh(m_img->getDeformedMesh(), true);
 		}
 
 		Wml::Vector2f SheetCanvas::obtainCoordForDeformedMesh(TTextureMesh* deformedMesh, int vertID, ImageFile currImg) {

@@ -171,18 +171,21 @@ namespace cacani {
 			void drawSkeleton();
 
 			// Mesh deformer related
-			bool m_bConstraintsValid;
-			std::set<unsigned int> m_vSelected;
+			//bool m_bConstraintsValid;
+			//std::set<unsigned int> m_vSelected;
 			unsigned int m_nSelected;
-			TTextureMesh* m_deformedMesh;
-			RigidMeshDeformer2D m_deformer;
-			bool meshInitialized = false;
+			//TTextureMesh* m_deformedMesh;
+			//RigidMeshDeformer2D m_deformer;
+			//bool meshInitialized = false;
 
-			void InvalidateConstraints();
-			void ValidateConstraints();
-			void InitializeDeformedMesh();
-			void UpdateDeformedMesh();
-			void drawHandles();
+			//void InvalidateConstraints();
+			//void ValidateConstraints();
+			
+			void UpdateDeformedMesh(ImageFile* m_img);
+			void drawHandles(ImageFile* m_img);
+
+
+
 			QVector2D obtainHeightRange(TTextureMesh* m_mesh);
 			QVector2D obtainWidthRange(TTextureMesh* m_mesh);
 			QVector2D convertToUV(QVector2D coord, QVector2D imageHeightRange, QVector2D imageWidthRange);
@@ -211,6 +214,7 @@ namespace cacani {
 			void updateState(int state);
 
 			Wml::Vector2f obtainCoordForDeformedMesh(TTextureMesh* deformedMesh, int vertID, ImageFile currImg);
+			void InitializeDeformedMesh(ImageFile* m_img);
 
 			private slots:
 				void playCanvas();

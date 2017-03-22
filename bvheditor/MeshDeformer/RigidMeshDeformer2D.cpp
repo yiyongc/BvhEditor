@@ -147,14 +147,10 @@ void RigidMeshDeformer2D::UpdateDeformedMesh(TTextureMesh* m_mesh, bool bRigid) 
 void RigidMeshDeformer2D::UpdateConstraint(Constraint & cons) {
 	std::set<Constraint>::iterator found(m_vConstraints.find(cons));
 	if (found != m_vConstraints.end()) {
-
 		//Update position
-		//(*found).vConstrainedPos[0] = cons.vConstrainedPos[0];
-
 		memcpy(&(*found).vConstrainedPos, &cons.vConstrainedPos, 2 * sizeof(float));
 
 		m_vDeformedVerts[cons.nVertex].vPosition = cons.vConstrainedPos;
-
 	}
 	else {
 		m_vConstraints.insert(cons);
@@ -170,7 +166,7 @@ void RigidMeshDeformer2D::ValidateSetup() {
 
 	PrecomputeOrientationMatrix();
 
-	// ok, now scale triangles
+	// Scale triangles
 	size_t nTris = m_vTriangles.size();
 	for (unsigned int i = 0; i < nTris; ++i)
 		PrecomputeScalingMatrices(i);
