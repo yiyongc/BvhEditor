@@ -579,7 +579,6 @@ void RigidMeshDeformer2D::PrecomputeOrientationMatrix() {
 		DebugBreak();
 
 	// now compute -GPrimeInverse * B
-	Wml::GMatrixd lol = mGPrimeInverse.operator*(mB);
 	Wml::GMatrixd mFinal = mGPrimeInverse * mB;
 	mFinal *= -1;
 

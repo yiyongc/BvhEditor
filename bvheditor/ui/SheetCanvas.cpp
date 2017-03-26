@@ -129,7 +129,7 @@ namespace cacani {
 			if (descendent)  glColor3f(0.662745f, 0.662745f, 0.662745f);
 			glPushMatrix();
 
-			// 
+			// Root node
 			if (joint->parent == NULL)
 			{
 				glTranslatef(data[0] * scale, data[1] * scale, data[2] * scale);
@@ -877,7 +877,7 @@ namespace cacani {
 					if (currImg.getDeformedMesh()->facesCount() != 0)
 						renderDeformedMesh(currImg.getDeformedMesh());
 					
-					//mapTextureToMesh(currImg, m_deformedMesh);
+					//mapTextureToMesh(currImg, currImg.getDeformedMesh());
 
 					//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
 					//if (currImg.m_imgTexture == 0)
@@ -1041,16 +1041,16 @@ namespace cacani {
 				switch (event->key()) {
 				case (Qt::Key_Left) :
 					qDebug() << "Left Arrow Button Pressed.";
-					setYRotation(yRot + 100);
+					setYRotation(yRot + 20);
 					break;
 				case (Qt::Key_Right) :
-					setYRotation(yRot - 100);
+					setYRotation(yRot - 20);
 					break;
 				case (Qt::Key_Up) :
-					setXRotation(xRot + 100);
+					setXRotation(xRot + 20);
 					break;
 				case (Qt::Key_Down) :
-					setXRotation(xRot - 100);
+					setXRotation(xRot - 20);
 					break;
 				case (Qt::Key_W) :
 					zoomInCamera();
@@ -1093,7 +1093,7 @@ namespace cacani {
 
 			if (event->key() == Qt::Key_Space) {
 				int newState = canvasState + 1;
-				if (newState > 2)
+				if (newState > 4)
 					newState = 1;
 				updateState(newState);
 				updateGL();
@@ -1148,37 +1148,48 @@ namespace cacani {
 			else if (canvasState == STATE_MAPPING) {
 				//Get position of mouse click
 				mouseToWorld(lastPos.x(), lastPos.y());
-				
-				ImageFile* selectedImg = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-				//if (meshInitialized)
-				selectedVertex = collisionMesh(*selectedImg->getDeformedMesh());
+				if (m_imageGroup->m_images.size() != 0) {
+					ImageFile* selectedImg = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
+					//if (meshInitialized)
+					selectedVertex = collisionMesh(*selectedImg->getDeformedMesh());
 
-				/*if (event->buttons() & Qt::MiddleButton) {
-					InitializeDeformedMesh();
-					meshInitialized = true;
-				}*/
-				if (event->buttons() & Qt::RightButton) {
-					if (selectedVertex != -1) {
-						if (selectedImg->m_vSelected.find(selectedVertex) == selectedImg->m_vSelected.end())
-							selectedImg->m_vSelected.insert(selectedVertex);
-						else {
-							selectedImg->m_vSelected.erase(selectedVertex);
-							selectedImg->m_deformer.removeHandle(selectedVertex);
+					/*if (event->buttons() & Qt::MiddleButton) {
+						InitializeDeformedMesh();
+						meshInitialized = true;
+						}*/
+					if (event->buttons() & Qt::RightButton) {
+						if (selectedVertex != -1) {
+							if (selectedImg->m_vSelected.find(selectedVertex) == selectedImg->m_vSelected.end())
+								selectedImg->m_vSelected.insert(selectedVertex);
+							else {
+								selectedImg->m_vSelected.erase(selectedVertex);
+								selectedImg->m_deformer.removeHandle(selectedVertex);
 
-							//Restore position, deformed mesh has coordinates taking into account transformation matrix
-							Wml::Vector3f vVertex;
-							TTextureMesh* m_mesh = selectedImg->getMeshImage().getPointer()->meshes().at(0).getPointer();
-							//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
-							
-							Wml::Vector2f coordinates = obtainCoordForDeformedMesh(m_mesh, selectedVertex, *selectedImg);
+								//Restore position, deformed mesh has coordinates taking into account transformation matrix
+								Wml::Vector3f vVertex;
+								TTextureMesh* m_mesh = selectedImg->getMeshImage().getPointer()->meshes().at(0).getPointer();
+								//ImageFile currImg = m_imageGroup->m_images.at(m_imageList->currentIndex().row());
 
-							selectedImg->getDeformedMesh()->vertex(selectedVertex).P().x = coordinates.X();
-							selectedImg->getDeformedMesh()->vertex(selectedVertex).P().y = coordinates.Y();
+								Wml::Vector2f coordinates = obtainCoordForDeformedMesh(m_mesh, selectedVertex, *selectedImg);
+
+								selectedImg->getDeformedMesh()->vertex(selectedVertex).P().x = coordinates.X();
+								selectedImg->getDeformedMesh()->vertex(selectedVertex).P().y = coordinates.Y();
+							}
+
+							selectedImg->invalidateConstraints();
+
 						}
-
-						selectedImg->invalidateConstraints();
-
 					}
+				}
+				if (event->buttons() & Qt::MidButton) {
+					
+					const cacani::data::LayerGroup* layGroup;
+					layGroup = dynamic_cast<const cacani::data::LayerGroup*> (m_base->childAtIndex(0));
+
+					Wml::GMatrixd skeletonCoord = getGlobalCoord(layGroup->childAtIndex(0), 16, m_frame);
+					double xx = skeletonCoord(0, 0) * figure_scale;
+					double yy = skeletonCoord(1, 0) * figure_scale;
+					double zz = skeletonCoord(2, 0) * figure_scale;
 				}
 			}
 
@@ -1239,6 +1250,8 @@ namespace cacani {
 				}
 			}
 			else if (event->buttons() & Qt::LeftButton && canvasState == STATE_MAPPING) {
+				if (m_imageGroup->m_images.size() == 0) return;
+
 				ImageFile* selectedImg = &m_imageGroup->m_images.at(m_imageList->currentIndex().row());
 
 				if (selectedImg->m_vSelected.find(selectedVertex) != selectedImg->m_vSelected.end()) {
@@ -1836,7 +1849,123 @@ namespace cacani {
 			return coordinate;
 		}
 
+		Wml::GMatrixd SheetCanvas::calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum) {
+			double iden[] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+			Wml::GMatrixd translation(4, 4, iden);
+			Wml::GMatrixd rotateX(4, 4, iden);
+			Wml::GMatrixd rotateY(4, 4, iden);
+			Wml::GMatrixd rotateZ(4, 4, iden);
 
+			cacani::data::Joint* currJoint = m_layer->GetJoint(jointIndex);
+
+			double* motionData = m_layer->sheetAtIndex(frameNum)->getMotion();
+			double transValues[] = { 0, 0, 0, 1 };
+
+			//Obtain translation matrix value
+			if (currJoint->parent == NULL) {
+				transValues[0] = motionData[0];
+				transValues[1] = motionData[1];
+				transValues[2] = motionData[2];
+			}
+			else {
+				double* offsetValues = currJoint->offset;
+				transValues[0] = offsetValues[0];
+				transValues[1] = offsetValues[1];
+				transValues[2] = offsetValues[2];
+			}
+			Wml::GVectord transVector(4, transValues);
+			translation.SetColumn(3, transVector);
+
+			
+
+			int numChannels = currJoint->channels.size();
+			
+			//Obtain rotation matrices based on offset in motion data
+			for (int i = 0; i < numChannels; i++) {
+				cacani::data::Channel* channel = currJoint->channels[i];
+				double rotValue = motionData[channel->index];
+				double sValue, cValue;
+				if (rotValue < 0) {
+					sValue = -sin(rotValue * M_PI / 180);
+					cValue = cos(rotValue * M_PI / 180);
+				}
+				else {
+					sValue = -sin(rotValue * M_PI / 180);
+					cValue = cos(rotValue * M_PI / 180);
+				}
+
+				if (channel->type == cacani::data::Xrotation) {
+					double col1Values[] = { 0, cValue, sValue, 0 };
+					double col2Values[] = { 0, -sValue, cValue, 0 };
+
+					Wml::GVectord column1(4, col1Values);
+					Wml::GVectord column2(4, col2Values);
+
+					rotateX.SetColumn(1, column1);
+					rotateX.SetColumn(2, column2);
+				}
+				else if (channel->type == cacani::data::Yrotation) {
+					double col0Values[] = { cValue, 0, -sValue, 0 };
+					double col2Values[] = { sValue, 0, cValue, 0 };
+
+					Wml::GVectord column0(4, col0Values);
+					Wml::GVectord column2(4, col2Values);
+
+					rotateY.SetColumn(0, column0);
+					rotateY.SetColumn(2, column2); 
+				}
+				else if (channel->type == cacani::data::Zrotation) {
+					double col0Values[] = { cValue, sValue, 0, 0 };
+					double col1Values[] = { -sValue, cValue, 0, 0 };
+
+					Wml::GVectord column0(4, col0Values);
+					Wml::GVectord column1(4, col1Values);
+
+					rotateY.SetColumn(0, column0);
+					rotateY.SetColumn(1, column1);;
+				}
+			}
+
+			ChannelOrder order = currJoint->channel_order;
+			Wml::GMatrixd rotMatrix(4, 4);
+			switch (order) {
+				case (XYZ) :
+					rotMatrix = rotateX * rotateY * rotateZ;
+					break;
+				case (XZY) :
+					rotMatrix = rotateX * rotateZ * rotateY;
+					break;
+				case (YXZ):
+					rotMatrix = rotateY * rotateX * rotateZ;
+					break;
+				case (YZX):
+					rotMatrix = rotateY * rotateZ * rotateX;
+					break;
+				case (ZXY):
+					rotMatrix = rotateZ * rotateX * rotateY;
+					break;
+				case (ZYX):
+					rotMatrix = rotateZ * rotateY * rotateX;
+					break;
+			}
+
+			Wml::GMatrixd myMatrix = translation * rotMatrix;
+
+			if (currJoint->parent == NULL)
+				return myMatrix;
+			else
+				return calculateGlobalCoordMatrix(m_layer, currJoint->parent->index, frameNum) * myMatrix;
+
+		}
+
+		Wml::GMatrixd SheetCanvas::getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum) {
+			Wml::GMatrixd localCoord(4, 1);
+			double local[] = { 0, 0, 0, 1 };
+			Wml::GVectord vectorToSet(4, local);
+			localCoord.SetColumn(0, vectorToSet);
+
+			return calculateGlobalCoordMatrix(m_layer, jointIndex, frameNum) * localCoord;
+		}
 		//--------------------------------------//
 
 		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//

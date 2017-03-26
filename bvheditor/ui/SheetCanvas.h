@@ -18,8 +18,13 @@
 #include "../OpenToonz/meshutils.h"
 #include "Skeleton.h"
 #include "../MeshDeformer/RigidMeshDeformer2D.h"
+#include <cmath>
 
 //using namespace cacani::controller;
+
+#ifndef M_PI
+const double M_PI = 3.14159265358979323846;
+#endif
 
 namespace cacani {
 
@@ -215,6 +220,8 @@ namespace cacani {
 
 			Wml::Vector2f obtainCoordForDeformedMesh(TTextureMesh* deformedMesh, int vertID, ImageFile currImg);
 			void InitializeDeformedMesh(ImageFile* m_img);
+			Wml::GMatrixd calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
+			Wml::GMatrixd getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
 
 			private slots:
 				void playCanvas();
