@@ -19,6 +19,8 @@
 #include "Skeleton.h"
 #include "../MeshDeformer/RigidMeshDeformer2D.h"
 #include <cmath>
+#include "SkeletonMapDialog.h"
+#include <unordered_map>
 
 //using namespace cacani::controller;
 
@@ -188,7 +190,7 @@ namespace cacani {
 			
 			void UpdateDeformedMesh(ImageFile* m_img);
 			void drawHandles(ImageFile* m_img);
-
+			unordered_map <int, int> vertJointMap;
 
 
 			QVector2D obtainHeightRange(TTextureMesh* m_mesh);
@@ -209,7 +211,9 @@ namespace cacani {
 			QTimer* m_timer;
 			QTimer* m_timer_selected;
 			int	currentFrame = 0;
+
 			
+
 			void toggleViewImage();
 			void toggleViewMesh();
 			void renderImage(ImageFile img);

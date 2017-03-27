@@ -54,6 +54,7 @@ protected:
 	struct Constraint {
 		unsigned int nVertex;
 		mutable Wml::Vector2f vConstrainedPos;
+		int jointIndex = -1;
 
 		Constraint() { nVertex = 0; vConstrainedPos = Wml::Vector2f::ZERO; }
 		Constraint(unsigned int nVert, const Wml::Vector2f & vPos) { nVertex = nVert; vConstrainedPos = vPos; }

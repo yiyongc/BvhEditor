@@ -143,6 +143,9 @@
     <ClCompile Include="GeneratedFiles\Debug\moc_SheetCanvas.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SkeletonMapDialog.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_StartupDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -209,6 +212,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_SheetCanvas.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SkeletonMapDialog.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_StartupDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -246,6 +252,7 @@
     <ClCompile Include="OpenToonz\tsmartpointer.cpp" />
     <ClCompile Include="OpenToonz\tstring.cpp" />
     <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="SkeletonMapDialog.cpp" />
     <ClCompile Include="SkeletonVertex.cpp" />
     <ClCompile Include="ui\DeleteSelectedDialog.cpp" />
     <ClCompile Include="ui\ExportDialog.cpp" />
@@ -1059,6 +1066,16 @@
     <ClInclude Include="OpenToonz\gutil.h" />
     <ClInclude Include="OpenToonz\meshbuilder.h" />
     <ClInclude Include="Skeleton.h" />
+    <CustomBuild Include="SkeletonMapDialog.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing SkeletonMapDialog.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB "-I$(ProjectDir)\Wml\Include" "-I$(ProjectDir)..\Middleware\boost_1_55_0" "-I$(ProjectDir)..\Middleware\Eigen" "-I$(ProjectDir)..\Middleware\glm" "-I$(ProjectDir)..\Middleware\glfw-3.1.2.bin.WIN32" "-I$(ProjectDir)..\Middleware\glut-3.7.6-bin" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing SkeletonMapDialog.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB "-I$(ProjectDir)..\Middleware\boost_1_55_0" "-I$(ProjectDir)..\Middleware\Eigen" "-I$(ProjectDir)..\Middleware\glm" "-I$(ProjectDir)..\Middleware\glfw-3.1.2.bin.WIN32" "-I$(ProjectDir)..\Middleware\glut-3.7.6-bin" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets"</Command>
+    </CustomBuild>
     <ClInclude Include="SkeletonVertex.h" />
     <ClInclude Include="ui\ImageListWidget.h" />
     <CustomBuild Include="OpenToonz\MeshOptionDialog.h">

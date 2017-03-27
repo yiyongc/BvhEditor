@@ -12,6 +12,7 @@
 #include "data/Matrices.h"
 #include <qdebug.h>
 
+
 namespace cacani { 
 
 
@@ -31,7 +32,7 @@ namespace cacani {
 
 		const int     message_length = 65;
 		const int     max_bvh_file_number = 30;
-		const float   figure_scale = 0.02f;
+		const float   figure_scale = 0.04f;
 
 		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -1183,13 +1184,16 @@ namespace cacani {
 				}
 				if (event->buttons() & Qt::MidButton) {
 					
-					const cacani::data::LayerGroup* layGroup;
+					SkeletonMapDialog* skeletonMapDialog = new SkeletonMapDialog(m_base, &vertJointMap, 22);
+					skeletonMapDialog->exec();
+					/*const cacani::data::LayerGroup* layGroup;
 					layGroup = dynamic_cast<const cacani::data::LayerGroup*> (m_base->childAtIndex(0));
 
 					Wml::GMatrixd skeletonCoord = getGlobalCoord(layGroup->childAtIndex(0), 16, m_frame);
 					double xx = skeletonCoord(0, 0) * figure_scale;
 					double yy = skeletonCoord(1, 0) * figure_scale;
-					double zz = skeletonCoord(2, 0) * figure_scale;
+					double zz = skeletonCoord(2, 0) * figure_scale;*/
+					cout << vertJointMap[22];
 				}
 			}
 

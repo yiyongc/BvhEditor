@@ -380,6 +380,15 @@
     <ClCompile Include="MeshDeformer\RigidMeshDeformer2D.cpp">
       <Filter>MeshDeformer</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SkeletonMapDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonMapDialog.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SkeletonMapDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">
@@ -549,6 +558,9 @@
     </CustomBuild>
     <CustomBuild Include="OpenToonz\MeshOptionDialog.h">
       <Filter>OpenToonz</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SkeletonMapDialog.h">
+      <Filter>ui</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
