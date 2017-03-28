@@ -188,15 +188,17 @@ namespace cacani {
 			//void InvalidateConstraints();
 			//void ValidateConstraints();
 			
-			void UpdateDeformedMesh(ImageFile* m_img);
+			void UpdateDeformedMesh(ImageFile* m_img, int imageIndex, unordered_multimap<int, pair<int, int>>* map, Layer* m_layer, int curFrame);
 			void drawHandles(ImageFile* m_img);
-			unordered_map <int, int> vertJointMap;
+			unordered_multimap <int, pair<int, int>> vertJointMap;
 
 
 			QVector2D obtainHeightRange(TTextureMesh* m_mesh);
 			QVector2D obtainWidthRange(TTextureMesh* m_mesh);
 			QVector2D convertToUV(QVector2D coord, QVector2D imageHeightRange, QVector2D imageWidthRange);
 			void mapTextureToMesh(ImageFile currImg, TTextureMesh* m_mesh);
+
+			void updateJointIndices();
 
 		public:
 			void animate();
@@ -224,8 +226,9 @@ namespace cacani {
 
 			Wml::Vector2f obtainCoordForDeformedMesh(TTextureMesh* deformedMesh, int vertID, ImageFile currImg);
 			void InitializeDeformedMesh(ImageFile* m_img);
-			Wml::GMatrixd calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
-			Wml::GMatrixd getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
+			
+			//Wml::GMatrixd calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
+			//Wml::GMatrixd getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
 
 			private slots:
 				void playCanvas();

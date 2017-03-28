@@ -32,6 +32,8 @@ namespace cacani {
 
 		const int     message_length = 65;
 		const int     max_bvh_file_number = 30;
+
+		//If you edit this value, edit the same one in ImageFile.h
 		const float   figure_scale = 0.04f;
 
 		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -761,7 +763,7 @@ namespace cacani {
 			int nImg = m_imageGroup->m_images.size();
 			for (int i = 0; i < nImg; i++) {
 				if (m_imageGroup->m_images.at(i).getDeformedMesh()->facesCount() != 0)
-					UpdateDeformedMesh(&m_imageGroup->m_images.at(i));
+					UpdateDeformedMesh(&m_imageGroup->m_images.at(i), i, &vertJointMap, dynamic_cast<const cacani::data::LayerGroup*> (m_base->childAtIndex(0))->childAtIndex(0), m_frame);
 			}
 			//UpdateDeformedMesh();
 
@@ -1160,11 +1162,30 @@ namespace cacani {
 						}*/
 					if (event->buttons() & Qt::RightButton) {
 						if (selectedVertex != -1) {
-							if (selectedImg->m_vSelected.find(selectedVertex) == selectedImg->m_vSelected.end())
-								selectedImg->m_vSelected.insert(selectedVertex);
+							if (selectedImg->m_vSelected.find(selectedVertex) == selectedImg->m_vSelected.end()) {
+								SkeletonMapDialog* skeletonMapDialog = new SkeletonMapDialog(m_base, &vertJointMap, selectedVertex, m_imageList->currentIndex().row());
+								int dialogResult = skeletonMapDialog->exec();
+
+								if (dialogResult == QDialog::Accepted) 
+									selectedImg->m_vSelected.insert(selectedVertex);
+								else
+									return;
+							}
 							else {
 								selectedImg->m_vSelected.erase(selectedVertex);
 								selectedImg->m_deformer.removeHandle(selectedVertex);
+
+								//Remove from vertJointMap
+								pair<int, int> pairToRemove = make_pair(m_imageList->currentIndex().row(), selectedVertex);
+								unordered_multimap<int, pair<int, int>>::iterator it = vertJointMap.begin();
+
+								for (; it != vertJointMap.end(); it++) {
+									if (it->second == pairToRemove) {
+										vertJointMap.erase(it);
+										break;
+									}
+								}
+								//vertJointMap.erase(selectedVertex);
 
 								//Restore position, deformed mesh has coordinates taking into account transformation matrix
 								Wml::Vector3f vVertex;
@@ -1184,8 +1205,7 @@ namespace cacani {
 				}
 				if (event->buttons() & Qt::MidButton) {
 					
-					SkeletonMapDialog* skeletonMapDialog = new SkeletonMapDialog(m_base, &vertJointMap, 22);
-					skeletonMapDialog->exec();
+	
 					/*const cacani::data::LayerGroup* layGroup;
 					layGroup = dynamic_cast<const cacani::data::LayerGroup*> (m_base->childAtIndex(0));
 
@@ -1193,7 +1213,6 @@ namespace cacani {
 					double xx = skeletonCoord(0, 0) * figure_scale;
 					double yy = skeletonCoord(1, 0) * figure_scale;
 					double zz = skeletonCoord(2, 0) * figure_scale;*/
-					cout << vertJointMap[22];
 				}
 			}
 
@@ -1825,9 +1844,9 @@ namespace cacani {
 			m_img->invalidateConstraints();
 		}
 
-		void SheetCanvas::UpdateDeformedMesh(ImageFile* m_img)
+		void SheetCanvas::UpdateDeformedMesh(ImageFile* m_img, int imageIndex, unordered_multimap<int, pair<int, int>>* map, Layer* m_layer, int curFrame)
 		{
-			m_img->validateConstraints();
+			m_img->validateConstraints(imageIndex, map, m_layer, curFrame);
 			m_img->m_deformer.UpdateDeformedMesh(m_img->getDeformedMesh(), true);
 		}
 
@@ -1853,123 +1872,125 @@ namespace cacani {
 			return coordinate;
 		}
 
-		Wml::GMatrixd SheetCanvas::calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum) {
-			double iden[] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-			Wml::GMatrixd translation(4, 4, iden);
-			Wml::GMatrixd rotateX(4, 4, iden);
-			Wml::GMatrixd rotateY(4, 4, iden);
-			Wml::GMatrixd rotateZ(4, 4, iden);
+		//Wml::GMatrixd SheetCanvas::calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum) {
+		//	double iden[] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+		//	Wml::GMatrixd translation(4, 4, iden);
+		//	Wml::GMatrixd rotateX(4, 4, iden);
+		//	Wml::GMatrixd rotateY(4, 4, iden);
+		//	Wml::GMatrixd rotateZ(4, 4, iden);
 
-			cacani::data::Joint* currJoint = m_layer->GetJoint(jointIndex);
+		//	cacani::data::Joint* currJoint = m_layer->GetJoint(jointIndex);
 
-			double* motionData = m_layer->sheetAtIndex(frameNum)->getMotion();
-			double transValues[] = { 0, 0, 0, 1 };
+		//	double* motionData = m_layer->sheetAtIndex(frameNum)->getMotion();
+		//	double transValues[] = { 0, 0, 0, 1 };
 
-			//Obtain translation matrix value
-			if (currJoint->parent == NULL) {
-				transValues[0] = motionData[0];
-				transValues[1] = motionData[1];
-				transValues[2] = motionData[2];
-			}
-			else {
-				double* offsetValues = currJoint->offset;
-				transValues[0] = offsetValues[0];
-				transValues[1] = offsetValues[1];
-				transValues[2] = offsetValues[2];
-			}
-			Wml::GVectord transVector(4, transValues);
-			translation.SetColumn(3, transVector);
+		//	//Obtain translation matrix value
+		//	if (currJoint->parent == NULL) {
+		//		transValues[0] = motionData[0];
+		//		transValues[1] = motionData[1];
+		//		transValues[2] = motionData[2];
+		//	}
+		//	else {
+		//		double* offsetValues = currJoint->offset;
+		//		transValues[0] = offsetValues[0];
+		//		transValues[1] = offsetValues[1];
+		//		transValues[2] = offsetValues[2];
+		//	}
+		//	Wml::GVectord transVector(4, transValues);
+		//	translation.SetColumn(3, transVector);
 
-			
+		//	
 
-			int numChannels = currJoint->channels.size();
-			
-			//Obtain rotation matrices based on offset in motion data
-			for (int i = 0; i < numChannels; i++) {
-				cacani::data::Channel* channel = currJoint->channels[i];
-				double rotValue = motionData[channel->index];
-				double sValue, cValue;
-				if (rotValue < 0) {
-					sValue = -sin(rotValue * M_PI / 180);
-					cValue = cos(rotValue * M_PI / 180);
-				}
-				else {
-					sValue = -sin(rotValue * M_PI / 180);
-					cValue = cos(rotValue * M_PI / 180);
-				}
+		//	int numChannels = currJoint->channels.size();
+		//	
+		//	//Obtain rotation matrices based on offset in motion data
+		//	for (int i = 0; i < numChannels; i++) {
+		//		cacani::data::Channel* channel = currJoint->channels[i];
+		//		double rotValue = motionData[channel->index];
+		//		double sValue, cValue;
+		//		if (rotValue < 0) {
+		//			sValue = -sin(rotValue * M_PI / 180);
+		//			cValue = cos(rotValue * M_PI / 180);
+		//		}
+		//		else {
+		//			sValue = -sin(rotValue * M_PI / 180);
+		//			cValue = cos(rotValue * M_PI / 180);
+		//		}
 
-				if (channel->type == cacani::data::Xrotation) {
-					double col1Values[] = { 0, cValue, sValue, 0 };
-					double col2Values[] = { 0, -sValue, cValue, 0 };
+		//		if (channel->type == cacani::data::Xrotation) {
+		//			double col1Values[] = { 0, cValue, sValue, 0 };
+		//			double col2Values[] = { 0, -sValue, cValue, 0 };
 
-					Wml::GVectord column1(4, col1Values);
-					Wml::GVectord column2(4, col2Values);
+		//			Wml::GVectord column1(4, col1Values);
+		//			Wml::GVectord column2(4, col2Values);
 
-					rotateX.SetColumn(1, column1);
-					rotateX.SetColumn(2, column2);
-				}
-				else if (channel->type == cacani::data::Yrotation) {
-					double col0Values[] = { cValue, 0, -sValue, 0 };
-					double col2Values[] = { sValue, 0, cValue, 0 };
+		//			rotateX.SetColumn(1, column1);
+		//			rotateX.SetColumn(2, column2);
+		//		}
+		//		else if (channel->type == cacani::data::Yrotation) {
+		//			double col0Values[] = { cValue, 0, -sValue, 0 };
+		//			double col2Values[] = { sValue, 0, cValue, 0 };
 
-					Wml::GVectord column0(4, col0Values);
-					Wml::GVectord column2(4, col2Values);
+		//			Wml::GVectord column0(4, col0Values);
+		//			Wml::GVectord column2(4, col2Values);
 
-					rotateY.SetColumn(0, column0);
-					rotateY.SetColumn(2, column2); 
-				}
-				else if (channel->type == cacani::data::Zrotation) {
-					double col0Values[] = { cValue, sValue, 0, 0 };
-					double col1Values[] = { -sValue, cValue, 0, 0 };
+		//			rotateY.SetColumn(0, column0);
+		//			rotateY.SetColumn(2, column2); 
+		//		}
+		//		else if (channel->type == cacani::data::Zrotation) {
+		//			double col0Values[] = { cValue, sValue, 0, 0 };
+		//			double col1Values[] = { -sValue, cValue, 0, 0 };
 
-					Wml::GVectord column0(4, col0Values);
-					Wml::GVectord column1(4, col1Values);
+		//			Wml::GVectord column0(4, col0Values);
+		//			Wml::GVectord column1(4, col1Values);
 
-					rotateY.SetColumn(0, column0);
-					rotateY.SetColumn(1, column1);;
-				}
-			}
+		//			rotateY.SetColumn(0, column0);
+		//			rotateY.SetColumn(1, column1);;
+		//		}
+		//	}
 
-			ChannelOrder order = currJoint->channel_order;
-			Wml::GMatrixd rotMatrix(4, 4);
-			switch (order) {
-				case (XYZ) :
-					rotMatrix = rotateX * rotateY * rotateZ;
-					break;
-				case (XZY) :
-					rotMatrix = rotateX * rotateZ * rotateY;
-					break;
-				case (YXZ):
-					rotMatrix = rotateY * rotateX * rotateZ;
-					break;
-				case (YZX):
-					rotMatrix = rotateY * rotateZ * rotateX;
-					break;
-				case (ZXY):
-					rotMatrix = rotateZ * rotateX * rotateY;
-					break;
-				case (ZYX):
-					rotMatrix = rotateZ * rotateY * rotateX;
-					break;
-			}
+		//	ChannelOrder order = currJoint->channel_order;
+		//	Wml::GMatrixd rotMatrix(4, 4);
+		//	switch (order) {
+		//		case (XYZ) :
+		//			rotMatrix = rotateX * rotateY * rotateZ;
+		//			break;
+		//		case (XZY) :
+		//			rotMatrix = rotateX * rotateZ * rotateY;
+		//			break;
+		//		case (YXZ):
+		//			rotMatrix = rotateY * rotateX * rotateZ;
+		//			break;
+		//		case (YZX):
+		//			rotMatrix = rotateY * rotateZ * rotateX;
+		//			break;
+		//		case (ZXY):
+		//			rotMatrix = rotateZ * rotateX * rotateY;
+		//			break;
+		//		case (ZYX):
+		//			rotMatrix = rotateZ * rotateY * rotateX;
+		//			break;
+		//	}
 
-			Wml::GMatrixd myMatrix = translation * rotMatrix;
+		//	Wml::GMatrixd myMatrix = translation * rotMatrix;
 
-			if (currJoint->parent == NULL)
-				return myMatrix;
-			else
-				return calculateGlobalCoordMatrix(m_layer, currJoint->parent->index, frameNum) * myMatrix;
+		//	if (currJoint->parent == NULL)
+		//		return myMatrix;
+		//	else
+		//		return calculateGlobalCoordMatrix(m_layer, currJoint->parent->index, frameNum) * myMatrix;
 
-		}
+		//}
 
-		Wml::GMatrixd SheetCanvas::getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum) {
-			Wml::GMatrixd localCoord(4, 1);
-			double local[] = { 0, 0, 0, 1 };
-			Wml::GVectord vectorToSet(4, local);
-			localCoord.SetColumn(0, vectorToSet);
+		//Wml::GMatrixd SheetCanvas::getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum) {
+		//	Wml::GMatrixd localCoord(4, 1);
+		//	double local[] = { 0, 0, 0, 1 };
+		//	Wml::GVectord vectorToSet(4, local);
+		//	localCoord.SetColumn(0, vectorToSet);
 
-			return calculateGlobalCoordMatrix(m_layer, jointIndex, frameNum) * localCoord;
-		}
+		//	return calculateGlobalCoordMatrix(m_layer, jointIndex, frameNum) * localCoord;
+		//}
+
+
 		//--------------------------------------//
 
 		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------//

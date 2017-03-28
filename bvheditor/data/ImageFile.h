@@ -4,6 +4,15 @@
 #include <qimage.h>
 #include <glut.h>
 #include "../MeshDeformer/RigidMeshDeformer2D.h"
+#include <unordered_map>
+#include "../data/Layer.h"
+
+#ifndef M_PI
+const double M_PI = 3.14159265358979323846;
+#endif
+
+const float   figure_scale = 0.04f;
+
 // This class is to store images with their respective meshes and their transformation matrix to ensure coherence between the images
 class ImageFile {
 
@@ -34,8 +43,11 @@ public:
 	}
 	
 	RigidMeshDeformer2D m_deformer;
+
 	void invalidateConstraints() { m_bConstraintsValid = false;  }
-	void validateConstraints();
+
+	void validateConstraints(int imageIndex, std::unordered_multimap<int, std::pair<int, int>>* map, cacani::data::Layer* m_layer, int curFrame);
+
 	std::set<unsigned int> m_vSelected;
 
 private:
@@ -51,6 +63,11 @@ private:
 
 	bool m_bConstraintsValid = false;
 	
+
+	Wml::GMatrixd calculateGlobalCoordMatrix(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
+	Wml::GMatrixd getGlobalCoord(cacani::data::Layer* m_layer, int jointIndex, int frameNum);
+	int findJointIndex(std::unordered_multimap<int, std::pair<int, int>>* map, int imageIndex, int vertID);
+
 };
 
 struct ImageGroup {

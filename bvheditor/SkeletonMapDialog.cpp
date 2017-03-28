@@ -1,12 +1,13 @@
 #include "SkeletonMapDialog.h"
 
-SkeletonMapDialog::SkeletonMapDialog(cacani::data::LayerGroup* layerGroup, unordered_map<int, int> *m, int selectedVert) :
+SkeletonMapDialog::SkeletonMapDialog(cacani::data::LayerGroup* layerGroup, unordered_multimap<int, pair<int, int>> *m, int selectedVert, int imageIndex) :
 m_layerGroup(layerGroup),
 m_joints(new QComboBox),
 m_Button_Confirm(new QPushButton("Confirm")),
 m_Button_Cancel(new QPushButton("Cancel")),
 m_map(m),
-selected(selectedVert)
+selected(selectedVert),
+selectedImage(imageIndex)
 {
 	//Setup link for the 2 buttons
 	connect(m_Button_Confirm, SIGNAL(clicked(bool)), this, SLOT(confirmClicked()));
@@ -61,15 +62,16 @@ void SkeletonMapDialog::confirmClicked() {
 	int ret = msgBox.exec();
 
 	if (ret == QMessageBox::Ok)	{
-		(*m_map)[selected] = jointIndex;
-		int i = 0;
+		//Pair keeps track of which image and vertex is mapped to the skeleton joint
+		m_pair = std::make_pair(selectedImage, selected);
+		//The unordered map uses the joint as the key
+		(*m_map).insert({ jointIndex, m_pair });
 		close();
-	}
-	else {
-		;
+		this->setResult(QDialog::Accepted);
 	}
 }
 
 void SkeletonMapDialog::cancelClicked() {
 	close();
+	this->setResult(QDialog::Rejected);
 }

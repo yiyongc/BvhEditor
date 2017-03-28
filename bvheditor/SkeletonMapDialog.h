@@ -19,17 +19,18 @@ class SkeletonMapDialog : public QDialog {
 	Q_OBJECT
 
 	public:
-		SkeletonMapDialog(cacani::data::LayerGroup* layerGroup, unordered_map<int, int> *m, int selectedVert);
+		SkeletonMapDialog(cacani::data::LayerGroup* layerGroup, unordered_multimap<int, pair<int, int>> *m, int selectedVert, int imageIndex);
 		~SkeletonMapDialog();
 
 	private:
-		unordered_map<int, int>* m_map;
+		unordered_multimap<int, pair<int, int>>* m_map;
 		cacani::data::LayerGroup* m_layerGroup;
 		QComboBox* m_joints;
 		QPushButton* m_Button_Confirm;
 		QPushButton* m_Button_Cancel;
 		int selected;
-
+		int selectedImage;
+		pair<int, int> m_pair;
 
 		private Q_SLOTS:
 			void confirmClicked();
