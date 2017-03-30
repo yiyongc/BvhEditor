@@ -6,6 +6,7 @@
 #include "../MeshDeformer/RigidMeshDeformer2D.h"
 #include <unordered_map>
 #include "../data/Layer.h"
+#include "../data/LayerGroup.h"
 
 #ifndef M_PI
 const double M_PI = 3.14159265358979323846;

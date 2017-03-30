@@ -762,10 +762,11 @@ namespace cacani {
 			//if (meshInitialized)
 			int nImg = m_imageGroup->m_images.size();
 			for (int i = 0; i < nImg; i++) {
-				if (m_imageGroup->m_images.at(i).getDeformedMesh()->facesCount() != 0)
-					UpdateDeformedMesh(&m_imageGroup->m_images.at(i), i, &vertJointMap, dynamic_cast<const cacani::data::LayerGroup*> (m_base->childAtIndex(0))->childAtIndex(0), m_frame);
+				if (m_imageGroup->m_images.at(i).getDeformedMesh()->facesCount() != 0) {
+					m_imageGroup->m_images.at(i).invalidateConstraints(); 
+					UpdateDeformedMesh(&m_imageGroup->m_images.at(i), i, &vertJointMap, /*dynamic_cast<const cacani::data::LayerGroup*> (*/m_base->childAtIndex(0)/*)->childAtIndex(0)*/, m_frame);
+				}
 			}
-			//UpdateDeformedMesh();
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			

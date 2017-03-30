@@ -211,8 +211,8 @@ void RigidMeshDeformer2D::ValidateDeformedMesh(bool bRigid) {
 	if (bRigid) {
 		// ok, now scale triangles
 		size_t nTris = m_vTriangles.size();
-		//for (unsigned int i = 0; i < nTris; ++i)
-		//	UpdateScaledTriangle(i);
+		for (unsigned int i = 0; i < nTris; ++i)
+			UpdateScaledTriangle(i);
 
 
 		//ApplyFittingStep();

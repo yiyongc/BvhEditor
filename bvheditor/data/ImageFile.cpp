@@ -163,8 +163,13 @@ Wml::GMatrixd ImageFile::calculateGlobalCoordMatrix(cacani::data::Layer* m_layer
 	Wml::GMatrixd rotateZ(4, 4, iden);
 
 	cacani::data::Joint* currJoint = m_layer->GetJoint(jointIndex);
+	double* motionData;
 
-	double* motionData = m_layer->sheetAtIndex(frameNum)->getMotion();
+	if (m_layer->m_sheets.size() != 0)
+		motionData = m_layer->sheetAtIndex(frameNum)->getMotion();
+	else
+		motionData = dynamic_cast<cacani::data::LayerGroup*> (m_layer)->childAtIndex(0)->sheetAtIndex(frameNum)->getMotion();
+
 	double transValues[] = { 0, 0, 0, 1 };
 
 	//Obtain translation matrix value
@@ -182,23 +187,19 @@ Wml::GMatrixd ImageFile::calculateGlobalCoordMatrix(cacani::data::Layer* m_layer
 	Wml::GVectord transVector(4, transValues);
 	translation.SetColumn(3, transVector);
 
-
-
 	int numChannels = currJoint->channels.size();
 
 	//Obtain rotation matrices based on offset in motion data
 	for (int i = 0; i < numChannels; i++) {
 		cacani::data::Channel* channel = currJoint->channels[i];
 		double rotValue = motionData[channel->index];
+		
 		double sValue, cValue;
-		if (rotValue < 0) {
-			sValue = -sin(rotValue * M_PI / 180);
-			cValue = cos(rotValue * M_PI / 180);
-		}
-		else {
-			sValue = -sin(rotValue * M_PI / 180);
-			cValue = cos(rotValue * M_PI / 180);
-		}
+		if (rotValue < 0) 
+			rotValue += 360;
+		
+		sValue = sin(rotValue * M_PI / 180);
+		cValue = cos(rotValue * M_PI / 180);
 
 		if (channel->type == cacani::data::Xrotation) {
 			double col1Values[] = { 0, cValue, sValue, 0 };

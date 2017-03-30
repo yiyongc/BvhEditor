@@ -17,7 +17,8 @@ selectedImage(imageIndex)
 	cacani::data::Layer* curLayer;
 
 	curLayerGroup = dynamic_cast<const cacani::data::LayerGroup*> (m_layerGroup->childAtIndex(0));
-	curLayer = curLayerGroup->childAtIndex(0);
+	//curLayer = curLayerGroup->childAtIndex(0);
+	curLayer = m_layerGroup->childAtIndex(0);
 	
 	//Populate combo box
 	for (int i = 0; i < curLayer->GetNumJoint(); i++) {
